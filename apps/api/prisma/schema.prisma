@@ -1,6 +1,5 @@
 // Schema da Plataforma de Controlo de Facturação (ver CLAUDE.md §6).
-// Os modelos são acrescentados sprint a sprint (Sprint 1: utilizadores, equipas e permissões).
-// AuditLog entra já no Sprint 0 porque o Prisma exige pelo menos um modelo.
+// Os modelos são acrescentados sprint a sprint.
 
 generator client {
   provider = "prisma-client-js"
@@ -9,6 +8,58 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum Role {
+  GESTOR
+  SUPERVISOR
+  TECNICO
+}
+
+enum BillingType {
+  PROVIDERS
+  GERADORES
+}
+
+model User {
+  id                  String           @id @default(cuid())
+  nome                String
+  email               String           @unique
+  passwordHash        String
+  role                Role
+  ativo               Boolean          @default(true)
+  mustChangePassword  Boolean          @default(true)
+  teams               TeamMember[]
+  permissionOverrides UserPermission[]
+  createdAt           DateTime         @default(now())
+}
+
+model Team {
+  id      String       @id @default(cuid())
+  nome    String       @unique
+  tipo    BillingType
+  ativo   Boolean      @default(true)
+  members TeamMember[]
+}
+
+model TeamMember {
+  userId String
+  teamId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([userId, teamId])
+  @@index([teamId])
+}
+
+model UserPermission {
+  userId  String
+  module  String
+  action  String
+  allowed Boolean
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, module, action])
 }
 
 model AuditLog {

@@ -18,17 +18,17 @@
 - `/api/health` devolve 200.
 
 ## Sprint 1 — Autenticação, utilizadores, equipas e permissões
-- [ ] Schema: `User`, `Team`, `TeamMember`, `UserPermission`, `AuditLog`.
-- [ ] Login com JWT + refresh em cookie (`bcryptjs`); troca de password obrigatória no primeiro acesso.
-- [ ] Catálogo de permissões e matriz por perfil (`packages/shared/permissions.ts`).
-- [ ] Plugin `rbac`: `requirePermission(module, action)` e `scopeFilter(user)`.
-- [ ] Páginas do Gestor:
+- [x] Schema: `User`, `Team`, `TeamMember`, `UserPermission`, `AuditLog`.
+- [x] Login com JWT + refresh em cookie (`bcryptjs`); troca de password obrigatória no primeiro acesso.
+- [x] Catálogo de permissões e matriz por perfil (`packages/shared/permissions.ts`).
+- [x] Plugin `rbac`: `requirePermission(module, action)` e `scopeFilter(user)`.
+- [x] Páginas do Gestor:
   - Utilizadores: criar, editar, desactivar e atribuir perfil.
   - **Equipas: criar, editar e desactivar** (nome + tipo).
   - Membros: associar utilizadores às equipas.
   - Permissões por utilizador: grelha módulo × acção (default / permitir / negar).
-- [ ] `/me` com as permissões efectivas; menu dinâmico; guardas de rota; página inicial por perfil.
-- [ ] Seed do Gestor.
+- [x] `/me` com as permissões efectivas; menu dinâmico; guardas de rota; página inicial por perfil.
+- [x] Seed do Gestor.
 
 **Aceitação:**
 - Um Técnico da equipa A recebe 403 em tudo o que é da equipa B.

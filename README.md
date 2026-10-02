@@ -23,7 +23,9 @@ npm run dev                      # API :3000 · web :5173 (proxy /api)
 | `npm run build` | shared → API (`prisma generate` + `tsc`) → web (`vite build`) |
 | `npm run migrate` | `prisma migrate dev` |
 | `npm run seed` | `prisma db seed` |
-| `npm test` | Vitest (shared e API) |
+| `npm test` | Vitest (shared e API). Os testes de integração da API usam `TEST_DATABASE_URL` (BD recriada a cada execução); sem esta variável são ignorados |
+
+Primeiro acesso: entrar com `SEED_GESTOR_EMAIL` / `SEED_GESTOR_PASSWORD`; a aplicação obriga a trocar a password (mínimo 10 caracteres).
 
 Health check: `GET /api/health` → `200 {"status":"ok","db":"up"}` (503 sem BD).
 

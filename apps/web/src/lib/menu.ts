@@ -1,0 +1,42 @@
+import { can, Role } from "@cf/shared";
+import type { Me } from "./types";
+
+export interface MenuItem {
+  to: string;
+  label: string;
+  icon: string;
+  /** Permissão necessária (`module.action`). */
+  permission?: [string, string];
+  roles?: Role[];
+}
+
+export interface MenuSection {
+  title?: string;
+  items: MenuItem[];
+}
+
+/** O menu é gerado a partir das permissões efectivas (CLAUDE.md §5.3). Os módulos entram à medida dos sprints. */
+const SECTIONS: MenuSection[] = [
+  {
+    items: [
+      { to: "/meu-trabalho", label: "O meu trabalho", icon: "M4 6h16M4 12h16M4 18h10", roles: ["TECNICO"] },
+      { to: "/dashboard", label: "Dashboard", icon: "M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z", permission: ["dashboard", "view"], roles: ["GESTOR", "SUPERVISOR"] },
+    ],
+  },
+  {
+    title: "Administração",
+    items: [
+      { to: "/utilizadores", label: "Utilizadores", icon: "M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm13 9v-1a4 4 0 0 0-3-3.87M16 4.13a3 3 0 0 1 0 5.74", permission: ["users", "view"] },
+      { to: "/equipas", label: "Equipas", icon: "M3 21V8l9-5 9 5v13M9 21v-6h6v6", permission: ["teams", "view"] },
+    ],
+  },
+];
+
+export function buildMenu(user: Me): MenuSection[] {
+  return SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter(
+      (i) => (!i.roles || i.roles.includes(user.role)) && (!i.permission || can(user.permissions, i.permission[0], i.permission[1])),
+    ),
+  })).filter((s) => s.items.length > 0);
+}
