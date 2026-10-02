@@ -1,0 +1,25 @@
+// Schema da Plataforma de Controlo de Facturação (ver CLAUDE.md §6).
+// Os modelos são acrescentados sprint a sprint (Sprint 1: utilizadores, equipas e permissões).
+// AuditLog entra já no Sprint 0 porque o Prisma exige pelo menos um modelo.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  entity    String
+  entityId  String
+  action    String
+  diff      Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([userId, createdAt])
+}

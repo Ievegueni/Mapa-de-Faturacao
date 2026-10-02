@@ -4,14 +4,14 @@
 > **Regra transversal:** tudo tem de correr em **Node 16** (ver §2 do `CLAUDE.md`). Correr `node -v` antes de cada sprint.
 
 ## Sprint 0 — Fundação (Node 16)
-- [ ] Monorepo com npm workspaces (`apps/api`, `apps/web`, `packages/shared`).
-- [ ] `.nvmrc` (16), `.npmrc` (`engine-strict=true`) e `engines` em todos os `package.json`.
-- [ ] Instalar só as versões da tabela do §2 do `CLAUDE.md`, sem `^`.
-- [ ] API em TypeScript compilada para CommonJS; desenvolvimento com `ts-node-dev`.
-- [ ] Fastify 4 com plugin `prisma` e health check em `/api/health`.
-- [ ] Vite 4 + React 18 + Tailwind 3 + React Router 6 + TanStack Query 4.
-- [ ] Scripts: `dev`, `build`, `migrate`, `seed`, `test`.
-- [ ] Identidade visual Unitel (§18 do `CLAUDE.md`): paleta `brand`/`navy`/`ink` no `tailwind.config.js`, fonte Inter e logótipos de `docs/brand/` em `apps/web/public/`.
+- [x] Monorepo com npm workspaces (`apps/api`, `apps/web`, `packages/shared`).
+- [x] `.nvmrc` (16), `.npmrc` (`engine-strict=true`) e `engines` em todos os `package.json`.
+- [x] Instalar só as versões da tabela do §2 do `CLAUDE.md`, sem `^`.
+- [x] API em TypeScript compilada para CommonJS; desenvolvimento com `ts-node-dev`.
+- [x] Fastify 4 com plugin `prisma` e health check em `/api/health`.
+- [x] Vite 4 + React 18 + Tailwind 3 + React Router 6 + TanStack Query 4.
+- [x] Scripts: `dev`, `build`, `migrate`, `seed`, `test`.
+- [x] Identidade visual Unitel (§18 do `CLAUDE.md`): paleta `brand`/`navy`/`ink` no `tailwind.config.js`, fonte Inter e logótipos de `docs/brand/` em `apps/web/public/`.
 
 **Aceitação:**
 - Com Node 16, `npm ci && npm run build && npm run dev` corre sem erros nem avisos de `engines`.

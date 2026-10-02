@@ -58,7 +58,7 @@ O servidor **corre Node 16**. Tudo tem de arrancar e correr em Node 16.
 | recharts | 2.x | — |
 | jspdf + jspdf-autotable | 2.x / 3.x | PDF no browser |
 
-Se `npm install` reclamar de `engines`, **não forçar**: descer de versão.
+Se `npm install` reclamar de `engines`, **não forçar**: descer de versão. Para dependências transitivas, fixar a última versão compatível em `overrides` no `package.json` da raiz (ver `README.md`).
 
 ## 3. Arquitectura leve
 

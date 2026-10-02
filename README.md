@@ -1,0 +1,44 @@
+# Plataforma de Controlo de Facturação — Unitel
+
+Controlo da facturação de **Providers** e **Geradores** (Manutenção de Rede). Especificação: `CLAUDE.md`. Plano: `SPRINTS.md`.
+
+## Requisitos
+- **Node 16** (`nvm use` lê o `.nvmrc`; `node -v` deve mostrar `v16.x`).
+- PostgreSQL.
+
+## Arranque
+```bash
+cp .env.example .env
+cp .env.example apps/api/.env   # o Prisma lê o .env da pasta da API
+npm ci
+npm run migrate                  # cria/actualiza a BD
+npm run seed
+npm run dev                      # API :3000 · web :5173 (proxy /api)
+```
+
+## Scripts
+| Script | O que faz |
+|---|---|
+| `npm run dev` | shared (watch) + API (`ts-node-dev`) + web (Vite) |
+| `npm run build` | shared → API (`prisma generate` + `tsc`) → web (`vite build`) |
+| `npm run migrate` | `prisma migrate dev` |
+| `npm run seed` | `prisma db seed` |
+| `npm test` | Vitest (shared e API) |
+
+Health check: `GET /api/health` → `200 {"status":"ok","db":"up"}` (503 sem BD).
+
+## Estrutura
+```
+apps/api        Fastify 4 + Prisma 5 (CommonJS)
+apps/web        Vite 4 + React 18 + Tailwind 3 + React Router 6 + TanStack Query 4
+packages/shared Funções partilhadas (compilado para CommonJS; a web importa o código-fonte)
+docs/brand      Logótipos Unitel
+```
+
+## Node 16 e dependências
+- `.npmrc` tem `engine-strict=true` e `save-exact=true`: o `npm ci` falha se algum pacote exigir Node ≥ 18.
+- Algumas dependências transitivas publicaram versões só para Node ≥ 18/20. Estão fixadas em `overrides` no `package.json` da raiz:
+  - `node-releases` 2.0.44 (via browserslist)
+  - `postcss-load-config` 4.0.2 (via tailwindcss)
+  - `toad-cache` 3.7.0 (via fastify)
+- Ao adicionar dependências, se o `npm install` falhar com `EBADENGINE`, descer de versão ou acrescentar um override.

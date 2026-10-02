@@ -1,0 +1,36 @@
+{
+  "name": "@cf/api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/server.js",
+  "engines": {
+    "node": ">=16.13 <17"
+  },
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "migrate": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "seed": "prisma db seed",
+    "test": "vitest run"
+  },
+  "prisma": {
+    "seed": "ts-node --transpile-only prisma/seed.ts"
+  },
+  "dependencies": {
+    "@cf/shared": "0.1.0",
+    "@prisma/client": "5.22.0",
+    "dotenv": "16.6.1",
+    "fastify": "4.29.1",
+    "fastify-plugin": "4.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "16.18.126",
+    "prisma": "5.22.0",
+    "ts-node": "10.9.2",
+    "ts-node-dev": "2.0.0",
+    "typescript": "5.9.3",
+    "vitest": "0.34.6"
+  }
+}
