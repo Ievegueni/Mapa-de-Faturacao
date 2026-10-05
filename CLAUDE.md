@@ -455,7 +455,8 @@ Implementar em `packages/shared/calc/generators.ts`, como funções puras com te
 - Divisão por zero → mostrar "—".
 
 **Resumo do mês e Mapa Resumo — decisões de implementação (`calc/summary.ts`):**
-- Resumo do mês: Aluguer = aluguer − desconto de rede + manutenção + serviços extras − penalizações (as três categorias somam o total do mapa). Validado = medições validadas/fechadas; facturado = todas as medições; IVA calculado sobre o validado.
+- Resumo do mês: Aluguer = aluguer − desconto de rede + manutenção + serviços extras − penalizações (as três categorias somam o total do mapa). Validado = medições validadas/fechadas; IVA calculado sobre o validado.
+- Facturado = valor da factura do provider por categoria/zona, quando inserido (campos `fact*Cent` de `MonthlyIndicators`); senão, a soma de todas as medições do mapa. Diferença = facturado − validado.
 - Mapa Resumo: aluguer e manutenção = aluguer − desconto de rede + manutenção; total parcial = aluguer e manutenção + combustível + serviço; total global = parcial + transporte extra. As penalizações aparecem à parte (como no Excel) e não são descontadas destes totais.
 - Parque de geradores = medições de geradores sem data de remoção até ao fim do mês (confere com o Mapa Resumo real).
 - Penalizações: quantidade = medições com valor > 0. Excesso de horas também por escalão de horas acumuladas (35040 / 36480 / 37920 h, como no Excel).

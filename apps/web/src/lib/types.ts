@@ -348,12 +348,18 @@ export interface MonthIndicators {
   sitesRedeSemGarantia: number | null;
   poupancaCent: string | null;
   transporteExtraCent: string | null;
+  factAluguerLuandaCent?: string | null;
+  factAluguerProvinciaCent?: string | null;
+  factCombustivelLuandaCent?: string | null;
+  factCombustivelProvinciaCent?: string | null;
+  factServAbastLuandaCent?: string | null;
+  factServAbastProvinciaCent?: string | null;
 }
 
 export interface MonthSummaryResponse {
   mapId: string;
   ivaPercent: string | null;
-  linhas: { categoria: string; zona: string; facturado: string; validado: string; diferenca: string; iva: string; totalComIva: string }[];
+  linhas: { categoria: string; zona: string; facturado: string; origemFacturado: "factura" | "medicoes"; validado: string; diferenca: string; iva: string; totalComIva: string }[];
   totaisCategoria: { categoria: string; facturado: string; validado: string; diferenca: string; iva: string; totalComIva: string }[];
   total: { facturado: string; validado: string; diferenca: string; iva: string; totalComIva: string };
   ivaEmFalta: boolean;

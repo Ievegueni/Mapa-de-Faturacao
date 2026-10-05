@@ -91,6 +91,13 @@ describe.skipIf(!TEST_DB)("resumo do mês e Mapa Resumo de Validações", () => 
     expect(ok.json()).toMatchObject({ sitesRedePublica: 690, sitesRedeConfiguradosNetEco: 299, sitesRedeSemGarantia: null, poupancaCent: null, transporteExtraCent: "250000" });
   });
 
+  it("factura do provider: a Diferença passa a ser factura − validado", async () => {
+    await req("PUT", supervisor, `/generators/maps/${mapId}/indicators`, { sitesRedePublica: 690, transporteExtraCent: "250000", factCombustivelLuandaCent: "5000000" });
+    const s = (await req("GET", tecnico, `/generators/summary/${mapId}`)).json();
+    const comb = s.linhas.find((l: { categoria: string; zona: string }) => l.categoria === "Combustível" && l.zona === "Luanda");
+    expect(comb).toMatchObject({ facturado: "5000000", origemFacturado: "factura", validado: "4200000", diferenca: "800000" });
+  });
+
   it("Mapa Resumo de Validações: penalizações, parque, totais, variações e targets (sem divisões por zero)", async () => {
     const r = await req("GET", tecnico, `/generators/validations?ano=2027&providerId=${provider}`);
     expect(r.statusCode).toBe(200);

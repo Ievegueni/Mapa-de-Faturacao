@@ -328,6 +328,13 @@ model MonthlyIndicators {
   sitesRedeSemGarantia        Int?
   poupancaCent                BigInt?
   transporteExtraCent         BigInt?
+  /// Valores da factura do provider (opcionais): quando preenchidos, a Diferença do Resumo do mês = factura − validado.
+  factAluguerLuandaCent       BigInt?
+  factAluguerProvinciaCent    BigInt?
+  factCombustivelLuandaCent   BigInt?
+  factCombustivelProvinciaCent BigInt?
+  factServAbastLuandaCent     BigInt?
+  factServAbastProvinciaCent  BigInt?
   map                         GeneratorMonthlyMap @relation(fields: [mapId], references: [id], onDelete: Cascade)
 }
 

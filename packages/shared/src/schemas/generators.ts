@@ -126,4 +126,20 @@ export const monthlyIndicatorsSchema = z.object({
   sitesRedeSemGarantia: optionalCount,
   poupancaCent: manualCents,
   transporteExtraCent: manualCents,
+  factAluguerLuandaCent: manualCents,
+  factAluguerProvinciaCent: manualCents,
+  factCombustivelLuandaCent: manualCents,
+  factCombustivelProvinciaCent: manualCents,
+  factServAbastLuandaCent: manualCents,
+  factServAbastProvinciaCent: manualCents,
 });
+
+/** Campo de MonthlyIndicators com o valor facturado pelo provider para cada categoria/zona. */
+export const FACTURADO_FIELDS = {
+  "Aluguer|Luanda": "factAluguerLuandaCent",
+  "Aluguer|Província": "factAluguerProvinciaCent",
+  "Combustível|Luanda": "factCombustivelLuandaCent",
+  "Combustível|Província": "factCombustivelProvinciaCent",
+  "Serviço de Abastecimento|Luanda": "factServAbastLuandaCent",
+  "Serviço de Abastecimento|Província": "factServAbastProvinciaCent",
+} as const;

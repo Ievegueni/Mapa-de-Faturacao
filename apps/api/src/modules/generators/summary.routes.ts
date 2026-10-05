@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import {
   escalaoHoras,
+  FACTURADO_FIELDS,
   monthlyIndicatorsSchema,
   monthSummary,
   validationsYear,
@@ -62,6 +63,7 @@ const summaryRoutes: FastifyPluginAsync = async (app) => {
         servAbastCent: r.servAbastCent,
       })),
       ctx!.priceTable?.ivaPercent?.toString() ?? null,
+      Object.fromEntries(Object.entries(FACTURADO_FIELDS).map(([k, f]) => [k, map.indicators?.[f] ?? null])),
     );
     const sitesLigados = new Set(rows.filter((r) => r.site.ligadoRede).map((r) => r.siteId)).size;
     return {
@@ -78,10 +80,19 @@ const summaryRoutes: FastifyPluginAsync = async (app) => {
   app.put<{ Params: { id: string } }>("/generators/maps/:id/indicators", { preHandler: requirePermission("billing_generators", "validate") }, async (req) => {
     const data = parse(monthlyIndicatorsSchema, req.body);
     const map = await getMap(req.auth, req.params.id);
+    const toBig = (v: string | null) => (v === null ? null : BigInt(v));
     const values = {
-      ...data,
-      poupancaCent: data.poupancaCent === null ? null : BigInt(data.poupancaCent),
-      transporteExtraCent: data.transporteExtraCent === null ? null : BigInt(data.transporteExtraCent),
+      sitesRedePublica: data.sitesRedePublica,
+      sitesRedeConfiguradosNetEco: data.sitesRedeConfiguradosNetEco,
+      sitesRedeSemGarantia: data.sitesRedeSemGarantia,
+      poupancaCent: toBig(data.poupancaCent),
+      transporteExtraCent: toBig(data.transporteExtraCent),
+      factAluguerLuandaCent: toBig(data.factAluguerLuandaCent),
+      factAluguerProvinciaCent: toBig(data.factAluguerProvinciaCent),
+      factCombustivelLuandaCent: toBig(data.factCombustivelLuandaCent),
+      factCombustivelProvinciaCent: toBig(data.factCombustivelProvinciaCent),
+      factServAbastLuandaCent: toBig(data.factServAbastLuandaCent),
+      factServAbastProvinciaCent: toBig(data.factServAbastProvinciaCent),
     };
     const saved = await app.prisma.monthlyIndicators.upsert({ where: { mapId: map.id }, create: { mapId: map.id, ...values }, update: values });
     await app.audit({ userId: req.auth.id, entity: "MonthlyIndicators", entityId: map.id, action: "update", diff: { antes: map.indicators, depois: values } });

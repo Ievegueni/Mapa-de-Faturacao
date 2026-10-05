@@ -34,6 +34,14 @@ describe("Resumo do mês", () => {
     expect(s.ivaEmFalta).toBe(false);
   });
 
+  it("facturado da factura do provider, quando inserido, substitui a soma das medições", () => {
+    const s = monthSummary(rows, "14", { "Combustível|Luanda": "5000000", "Aluguer|Luanda": null });
+    const comb = s.linhas.find((l) => l.categoria === "Combustível" && l.zona === "Luanda")!;
+    expect(comb).toMatchObject({ facturado: B(5000000), origemFacturado: "factura", validado: B(4200000), diferenca: B(800000) });
+    const alug = s.linhas.find((l) => l.categoria === "Aluguer" && l.zona === "Luanda")!;
+    expect(alug.origemFacturado).toBe("medicoes");
+  });
+
   it("IVA vazio → aviso e IVA 0", () => {
     const s = monthSummary(rows, null);
     expect(s.ivaEmFalta).toBe(true);

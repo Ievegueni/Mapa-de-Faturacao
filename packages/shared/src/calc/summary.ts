@@ -36,6 +36,8 @@ export interface MonthSummaryLine {
   categoria: Categoria;
   zona: Zona;
   facturado: bigint;
+  /** "factura": valor da factura do provider inserido na ferramenta; "medicoes": soma de todas as medições do mapa. */
+  origemFacturado: "factura" | "medicoes";
   validado: bigint;
   diferenca: bigint;
   iva: bigint;
@@ -46,10 +48,16 @@ export interface MonthSummaryLine {
  * Agregação por categoria e zona.
  * - Aluguer = aluguer − desconto de rede + manutenção + serviços extras − penalizações
  *   (as três categorias somam o total do mapa).
- * - Facturado = todas as medições do mapa; Validado = medições validadas ou fechadas; Diferença = facturado − validado.
+ * - Facturado = valor da factura do provider, se inserido; senão, todas as medições do mapa.
+ *   Validado = medições validadas ou fechadas; Diferença = facturado − validado.
  * - IVA (taxa da tabela de preços) sobre Aluguer e Serviço de Abastecimento, calculado sobre o validado. O combustível não leva IVA.
  */
-export function monthSummary(rows: SummaryMeasurement[], ivaPercent: string | number | null) {
+export function monthSummary(
+  rows: SummaryMeasurement[],
+  ivaPercent: string | number | null,
+  /** Valores facturados pelo provider por "Categoria|Zona" (vazio = usa a soma das medições). */
+  facturado: Partial<Record<string, bigint | string | null>> = {},
+) {
   const ivaH = toHundredths(ivaPercent ?? null);
   const lines: MonthSummaryLine[] = [];
   const acc = new Map<string, { f: bigint; v: bigint }>();
@@ -70,8 +78,19 @@ export function monthSummary(rows: SummaryMeasurement[], ivaPercent: string | nu
   for (const c of CATEGORIAS) {
     for (const z of ZONAS) {
       const a = acc.get(`${c}|${z}`) ?? { f: ZERO, v: ZERO };
+      const manual = facturado[`${c}|${z}`];
+      const f = manual === null || manual === undefined || manual === "" ? a.f : BigInt(manual);
       const iva = c === "Combustível" || ivaH === null ? ZERO : divRound(a.v * ivaH, BigInt(10000));
-      lines.push({ categoria: c, zona: z, facturado: a.f, validado: a.v, diferenca: a.f - a.v, iva, totalComIva: a.v + iva });
+      lines.push({
+        categoria: c,
+        zona: z,
+        facturado: f,
+        origemFacturado: f === a.f && (manual === null || manual === undefined || manual === "") ? "medicoes" : "factura",
+        validado: a.v,
+        diferenca: f - a.v,
+        iva,
+        totalComIva: a.v + iva,
+      });
     }
   }
   const sum = (pick: (l: MonthSummaryLine) => bigint, filter: (l: MonthSummaryLine) => boolean = () => true) =>

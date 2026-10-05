@@ -25,13 +25,14 @@ export default function SummaryTab({ map }: { map: GeneratorMapDetail }) {
         <div className="border-b border-ink-100 px-5 py-3">
           <h3 className="font-semibold text-navy-950">Mapa de facturação do mês</h3>
           <p className="text-xs text-ink-500">
-            Validado = medições validadas ou fechadas; Diferença = facturado (todas as medições) − validado. IVA {d.ivaPercent ? formatPercent(d.ivaPercent) : "—"} sobre aluguer e serviço de abastecimento, calculado sobre o validado; o combustível não leva IVA.
+            Facturado = valor da factura do provider (se inserido abaixo) ou soma de todas as medições; Validado = medições validadas ou fechadas; Diferença = facturado − validado. IVA {d.ivaPercent ? formatPercent(d.ivaPercent) : "—"} sobre aluguer e serviço de abastecimento, calculado sobre o validado; o combustível não leva IVA.
           </p>
         </div>
         <table className="min-w-full divide-y divide-ink-100">
           <thead className="bg-ink-50/60">
             <tr>
               <th className={th}>Categoria</th>
+              <th className={`${th} text-right`}>Facturado</th>
               <th className={`${th} text-right`}>Validado</th>
               <th className={`${th} text-right`}>Diferença</th>
               <th className={`${th} text-right`}>IVA</th>
@@ -44,6 +45,10 @@ export default function SummaryTab({ map }: { map: GeneratorMapDetail }) {
                 {d.linhas.filter((l) => l.categoria === c).map((l) => (
                   <tr key={`${c}${l.zona}`}>
                     <td className={td}>{c} · {l.zona}</td>
+                    <td className={num} title={l.origemFacturado === "factura" ? "Valor da factura do provider" : "Soma de todas as medições do mapa"}>
+                      {formatKz(l.facturado)}
+                      <div className="text-[10px] text-ink-400">{l.origemFacturado === "factura" ? "factura" : "medições"}</div>
+                    </td>
                     <td className={num}>{formatKz(l.validado)}</td>
                     <td className={`${num} ${l.diferenca !== "0" ? "text-amber-700" : "text-ink-400"}`}>{formatKz(l.diferenca)}</td>
                     <td className={num}>{c === "Combustível" ? "—" : formatKz(l.iva)}</td>
@@ -52,6 +57,7 @@ export default function SummaryTab({ map }: { map: GeneratorMapDetail }) {
                 ))}
                 <tr className="bg-ink-50/60">
                   <td className={`${td} font-semibold text-navy-950`}>{c} · total</td>
+                  <td className={`${num} font-semibold`}>{formatKz(totalCat(c).facturado)}</td>
                   <td className={`${num} font-semibold text-navy-950`}>{formatKz(totalCat(c).validado)}</td>
                   <td className={`${num} font-semibold`}>{formatKz(totalCat(c).diferenca)}</td>
                   <td className={`${num} font-semibold`}>{c === "Combustível" ? "—" : formatKz(totalCat(c).iva)}</td>
@@ -63,6 +69,7 @@ export default function SummaryTab({ map }: { map: GeneratorMapDetail }) {
           <tfoot className="border-t-2 border-ink-200 bg-navy-950 text-white">
             <tr>
               <td className="px-4 py-3 text-sm font-semibold">Total a pagar</td>
+              <td className="px-4 py-3 text-right text-sm tabular-nums">{formatKz(d.total.facturado)}</td>
               <td className="px-4 py-3 text-right text-sm font-semibold tabular-nums">{formatKz(d.total.validado)}</td>
               <td className="px-4 py-3 text-right text-sm tabular-nums">{formatKz(d.total.diferenca)}</td>
               <td className="px-4 py-3 text-right text-sm tabular-nums">{formatKz(d.total.iva)}</td>
@@ -86,6 +93,12 @@ function IndicatorsCard({ map, data }: { map: GeneratorMapDetail; data: MonthSum
     sitesRedeSemGarantia: i?.sitesRedeSemGarantia?.toString() ?? "",
     poupancaCent: i?.poupancaCent ?? null,
     transporteExtraCent: i?.transporteExtraCent ?? null,
+    factAluguerLuandaCent: i?.factAluguerLuandaCent ?? null,
+    factAluguerProvinciaCent: i?.factAluguerProvinciaCent ?? null,
+    factCombustivelLuandaCent: i?.factCombustivelLuandaCent ?? null,
+    factCombustivelProvinciaCent: i?.factCombustivelProvinciaCent ?? null,
+    factServAbastLuandaCent: i?.factServAbastLuandaCent ?? null,
+    factServAbastProvinciaCent: i?.factServAbastProvinciaCent ?? null,
   });
   const [f, setF] = useState(toForm(data.indicadores));
   const [saved, setSaved] = useState(false);
@@ -111,7 +124,7 @@ function IndicatorsCard({ map, data }: { map: GeneratorMapDetail; data: MonthSum
   return (
     <Card className="space-y-4 p-5">
       <div>
-        <h3 className="font-semibold text-navy-950">Indicadores do mês (Mapa Resumo de Validações)</h3>
+        <h3 className="font-semibold text-navy-950">Indicadores do mês e factura do provider</h3>
         <p className="text-xs text-ink-500">Valores inseridos manualmente; podem ficar em branco.</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -124,6 +137,26 @@ function IndicatorsCard({ map, data }: { map: GeneratorMapDetail; data: MonthSum
         <Field label="Transporte extra de combustível">
           <MoneyInput value={f.transporteExtraCent} disabled={!canEdit} onChange={(v) => set({ transporteExtraCent: v })} aria-label="Transporte extra" />
         </Field>
+      </div>
+      <div className="border-t border-ink-100 pt-4">
+        <h4 className="text-sm font-semibold text-navy-950">Factura do provider (opcional)</h4>
+        <p className="mb-3 text-xs text-ink-500">Quando preenchido, o Facturado do quadro acima passa a ser o valor da factura e a Diferença mostra factura − validado.</p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {(
+            [
+              ["factAluguerProvinciaCent", "Aluguer · Província"],
+              ["factAluguerLuandaCent", "Aluguer · Luanda"],
+              ["factCombustivelProvinciaCent", "Combustível · Província"],
+              ["factCombustivelLuandaCent", "Combustível · Luanda"],
+              ["factServAbastProvinciaCent", "Serv. abastecimento · Província"],
+              ["factServAbastLuandaCent", "Serv. abastecimento · Luanda"],
+            ] as const
+          ).map(([k, label]) => (
+            <Field key={k} label={label}>
+              <MoneyInput value={f[k]} disabled={!canEdit} onChange={(v) => set({ [k]: v } as Partial<typeof f>)} aria-label={label} />
+            </Field>
+          ))}
+        </div>
       </div>
       {save.error ? <Alert>{errorMessage(save.error)}</Alert> : null}
       {saved && <Alert kind="success">Indicadores guardados.</Alert>}
