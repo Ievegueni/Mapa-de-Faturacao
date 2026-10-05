@@ -234,5 +234,11 @@ describe.skipIf(!TEST_DB)("mapas, medições e importação de geradores", () =>
     // 509.812,49 − (410 + 500) das 2 linhas repetidas ignoradas
     expect(list.totals.litros).toBe("508902.49");
     expect(c.litrosImportados).toBe("508902.49");
+
+    // Parque de Agosto no Mapa Resumo de Validações real: 1152 = 15 kVA 543 + 20 kVA 575 + 30 kVA 30 + 45 kVA 4
+    // (geradores sem data de remoção). As linhas 128 (30 kVA) e 628 (15 kVA), com nº de série repetido, não entram.
+    const { meses } = (await req("GET", gestor, `/generators/validations?ano=2026&providerId=${provider}&teamId=${team}`)).json();
+    expect(meses[8].parqueTotal).toBe(1150);
+    expect(meses[8].parquePorPotencia).toEqual({ "15": 542, "20": 575, "30": 29, "45": 4 });
   }, 60000);
 });

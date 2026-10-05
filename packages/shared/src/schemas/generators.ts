@@ -113,3 +113,17 @@ export const generatorMapCreateSchema = z.object({
 });
 
 export type MeasurementFields = z.infer<typeof measurementFieldsSchema>;
+
+const optionalCount = z
+  .union([z.literal(""), z.null(), z.coerce.number().int("Tem de ser um número inteiro").min(0, "Não pode ser negativo")])
+  .optional()
+  .transform((v) => (v === "" || v === undefined ? null : v));
+
+/** Linhas manuais do Mapa Resumo de Validações (por mapa mensal). Todos podem ficar vazios. */
+export const monthlyIndicatorsSchema = z.object({
+  sitesRedePublica: optionalCount,
+  sitesRedeConfiguradosNetEco: optionalCount,
+  sitesRedeSemGarantia: optionalCount,
+  poupancaCent: manualCents,
+  transporteExtraCent: manualCents,
+});

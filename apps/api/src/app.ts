@@ -10,6 +10,7 @@ import importRoutes from "./modules/generators/import/routes";
 import mapsRoutes from "./modules/generators/maps.routes";
 import generatorsMasterRoutes from "./modules/generators/master.routes";
 import measurementsRoutes from "./modules/generators/measurements.routes";
+import summaryRoutes from "./modules/generators/summary.routes";
 import healthRoutes from "./modules/health/routes";
 import permissionsRoutes from "./modules/permissions/routes";
 import pricesRoutes from "./modules/providers/prices.routes";
@@ -66,6 +67,7 @@ export function buildApp(opts: BuildAppOptions = {}) {
       api.register(mapsRoutes);
       api.register(measurementsRoutes);
       api.register(importRoutes);
+      api.register(summaryRoutes);
     },
     { prefix: "/api" },
   );
