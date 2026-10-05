@@ -55,9 +55,9 @@
   - Tabela mês × provider.
   - Remanescente, dívida e % de execução.
   - Alerta quando um mês ultrapassa o orçamento mensal.
-- [ ] Script de importação do `Novo Mapa de Facturação.xlsx`. *(pendente: aguarda o ficheiro)*
+- [x] Script de importação do `Novo Mapa de Facturação.xlsx` (`npm run import:providers -w apps/api`).
 
-**Aceitação:** os totais coincidem com a app HTML actual (Anglobal: Julho 660.000,00; Agosto 588.549,42). *(cálculos verificados com estes valores inseridos à mão; falta confirmar com a importação do Excel)*
+**Aceitação:** os totais coincidem com a app HTML actual (Anglobal: Julho 660.000,00; Agosto 588.549,42). *(confirmado com o ficheiro real: Julho 660.000,00, Agosto 588.549,42, total 1.248.549,42 e remanescente 34.151.450,58, iguais ao Excel)*
 
 ## Sprint 4 — Geradores: cálculos e dados mestre
 - [x] `packages/shared/calc/generators.ts` com todas as fórmulas do §7 do `CLAUDE.md`, incluindo o tratamento de valores vazios e as flags `SEM_PRECO_*`.

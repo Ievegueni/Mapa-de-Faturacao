@@ -29,6 +29,15 @@ Primeiro acesso: entrar com `SEED_GESTOR_EMAIL` / `SEED_GESTOR_PASSWORD`; a apli
 
 Health check: `GET /api/health` → `200 {"status":"ok","db":"up"}` (503 sem BD).
 
+## Migração dos dados existentes
+Depois de criar as equipas na ferramenta:
+```bash
+npm run import:providers -w apps/api -- --ficheiro "Novo Mapa de Facturação.xlsx" --equipa "<equipa de Providers>" --ano 2026
+```
+- As facturas ficam validadas (dados históricos); `--rascunho` deixa-as em rascunho.
+- Se já existirem facturas do mesmo parceiro/mês/tipo, são ignoradas; `--substituir` troca-as pelas do ficheiro.
+- O Auto de Medição importa-se na página do mapa de geradores (Importar Excel).
+
 ## Estrutura
 ```
 apps/api        Fastify 4 + Prisma 5 (CommonJS)

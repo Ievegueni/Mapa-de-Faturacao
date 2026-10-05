@@ -483,6 +483,7 @@ Implementar em `packages/shared/calc/generators.ts`, como funções puras com te
 - O PO é preenchido a partir do orçamento aplicável e guardado com a factura.
 - Fluxo: `RASCUNHO` → `SUBMETIDO` → `VALIDADO` (devolver: Submetido → Rascunho; reabrir: só o Gestor, Validado → Submetido). Quem não pode validar só altera os seus rascunhos. Factura validada: só valor pago, status e observação.
 - O resumo inclui todas as facturas do ano; a opção "Só facturas validadas" limita a Validado/Fechado.
+- Migração (`apps/api/scripts/import-providers.ts`): lê as folhas por parceiro (cabeçalho "Valor Total da FT Mensal") e junta os detalhes da folha PAGAMENTOS por parceiro + ano + valor pago (ou mês da data de facturação). Uma factura por parceiro/mês/tipo.
 - A inserção mantém **exactamente** os campos actuais:
   - Parceiro, PO (preenchido automaticamente), ano, mês, tipo, nº factura.
   - Data de facturação, data de execução, OTs, consumíveis.

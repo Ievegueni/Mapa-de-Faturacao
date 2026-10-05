@@ -13,7 +13,8 @@
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
     "seed": "prisma db seed",
-    "test": "vitest run"
+    "test": "vitest run",
+    "import:providers": "ts-node --transpile-only scripts/import-providers.ts"
   },
   "prisma": {
     "seed": "ts-node --transpile-only prisma/seed.ts"
