@@ -454,6 +454,13 @@ Implementar em `packages/shared/calc/generators.ts`, como funções puras com te
 - **Targets:** mostrar o target **do provider** e o target **global**, com desvio em valor e em %.
 - Divisão por zero → mostrar "—".
 
+**Resumo do mês e Mapa Resumo — decisões de implementação (`calc/summary.ts`):**
+- Resumo do mês: Aluguer = aluguer − desconto de rede + manutenção + serviços extras − penalizações (as três categorias somam o total do mapa). Validado = medições validadas/fechadas; facturado = todas as medições; IVA calculado sobre o validado.
+- Mapa Resumo: aluguer e manutenção = aluguer − desconto de rede + manutenção; total parcial = aluguer e manutenção + combustível + serviço; total global = parcial + transporte extra. As penalizações aparecem à parte (como no Excel) e não são descontadas destes totais.
+- Parque de geradores = medições de geradores sem data de remoção até ao fim do mês (confere com o Mapa Resumo real).
+- Penalizações: quantidade = medições com valor > 0. Excesso de horas também por escalão de horas acumuladas (35040 / 36480 / 37920 h, como no Excel).
+- Variações face ao mês anterior (o Excel divide pelo mês actual; aqui divide-se pelo anterior). Target do provider de "combustível" compara com abastecimento (combustível + serviço), como no Excel. Target global compara com a soma de todos os providers no âmbito do utilizador.
+
 **Detalhes de implementação (`calc/generators.ts`):**
 - Arredondamento ao cêntimo meio-para-cima; litros, horas e percentagens tratados em centésimas inteiras (sem vírgula flutuante).
 - As faixas aplicam-se às **horas de rede** (`24 − horasTrabalhadas`).

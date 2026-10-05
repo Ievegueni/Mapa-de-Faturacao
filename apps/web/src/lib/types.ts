@@ -341,3 +341,75 @@ export interface ImportPreview {
   avisos: { line: number; message: string }[];
   amostra: { linha: number; site: string; codigoPP: string | null; numeroSerie: string; novo: boolean; dias: number; litros: string | null; horasRede: number | null; descontoPercent: string | null; totalCent: string; flags: string[] }[];
 }
+
+export interface MonthIndicators {
+  sitesRedePublica: number | null;
+  sitesRedeConfiguradosNetEco: number | null;
+  sitesRedeSemGarantia: number | null;
+  poupancaCent: string | null;
+  transporteExtraCent: string | null;
+}
+
+export interface MonthSummaryResponse {
+  mapId: string;
+  ivaPercent: string | null;
+  linhas: { categoria: string; zona: string; facturado: string; validado: string; diferenca: string; iva: string; totalComIva: string }[];
+  totaisCategoria: { categoria: string; facturado: string; validado: string; diferenca: string; iva: string; totalComIva: string }[];
+  total: { facturado: string; validado: string; diferenca: string; iva: string; totalComIva: string };
+  ivaEmFalta: boolean;
+  indicadores: (MonthIndicators & { id: string }) | null;
+  sugestoes: { sitesRedePublica: number };
+}
+
+interface CV {
+  n: number;
+  valor: string;
+}
+interface Deviation {
+  target: string | null;
+  valor: string;
+  desvio: string | null;
+  desvioPercent: number | null;
+}
+interface Variation {
+  abs: string | null;
+  percent: number | null;
+}
+
+export type ValidationMonth =
+  | { mes: number; temMapa: false; indicadores: MonthIndicators | null }
+  | {
+      mes: number;
+      temMapa: true;
+      penSLA: CV;
+      penNivelCombust: CV;
+      penAvaria: CV;
+      penExcessoHoras: CV;
+      penHoras: Record<"40" | "60" | "100", CV>;
+      penalizacoesGlobal: string;
+      indicadores: MonthIndicators | null;
+      subtotalPenalizacoesPoupanca: string;
+      parqueTotal: number;
+      parquePorPotencia: Record<string, number>;
+      aluguerManutCent: string;
+      variacaoAluguerManut: Variation;
+      litros: string;
+      variacaoLitros: string | null;
+      combustivelCent: string;
+      servAbastCent: string;
+      abastecimentoCent: string;
+      variacaoAbastecimento: Variation;
+      totalParcialCent: string;
+      transporteExtraCent: string | null;
+      totalGlobalCent: string;
+      variacaoTotalGlobal: Variation;
+      targets: { providerAluguerManut: Deviation; providerAbastecimento: Deviation; globalAluguerManut: Deviation; globalAbastecimento: Deviation };
+    };
+
+export interface ValidationsResponse {
+  ano: number;
+  provider: { id: string; nome: string };
+  teamId: string | null;
+  meses: ValidationMonth[];
+  mapas: { id: string; mes: number; teamId: string; state: RecordStateT }[];
+}

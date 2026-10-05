@@ -10,8 +10,9 @@ import { stateTone } from "../billing-providers/invoiceRules";
 import FormTab from "./FormTab";
 import ImportTab from "./ImportTab";
 import MeasurementsTab from "./MeasurementsTab";
+import SummaryTab from "./SummaryTab";
 
-type Tab = "medicoes" | "formulario" | "importar";
+type Tab = "medicoes" | "resumo" | "formulario" | "importar";
 
 function Kpi({ label, value, tone }: { label: string; value: string; tone?: "warn" }) {
   return (
@@ -50,7 +51,10 @@ export default function MapPage() {
   const canImport = can(p, "billing_generators", "import") && !closed;
   const canForm = can(p, "billing_generators", "create") && !closed;
 
-  const tabs: { value: Tab; label: string }[] = [{ value: "medicoes", label: `Medições (${m.stats.medicoes.toLocaleString("pt-PT")})` }];
+  const tabs: { value: Tab; label: string }[] = [
+    { value: "medicoes", label: `Medições (${m.stats.medicoes.toLocaleString("pt-PT")})` },
+    { value: "resumo", label: "Resumo do mês" },
+  ];
   if (canForm) tabs.push({ value: "formulario", label: "Formulário por site" });
   if (canImport) tabs.push({ value: "importar", label: "Importar Excel" });
   const tab = (tabs.find((t) => t.value === params.get("tab"))?.value ?? "medicoes") as Tab;
@@ -115,6 +119,7 @@ export default function MapPage() {
 
       <Tabs<Tab> value={tab} onChange={(v) => setParams(v === "medicoes" ? {} : { tab: v })} items={tabs} />
       {tab === "medicoes" && <MeasurementsTab map={m} />}
+      {tab === "resumo" && <SummaryTab map={m} />}
       {tab === "formulario" && <FormTab map={m} />}
       {tab === "importar" && <ImportTab map={m} onDone={() => setParams({})} />}
     </>

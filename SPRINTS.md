@@ -89,11 +89,11 @@
 *Resultado com o ficheiro real: 1.161 linhas lidas e gravadas em ~1 s. Litros no ficheiro: 509.812,49 (igual ao Excel). 2 linhas com nº de série repetido ficam de fora (410 + 500 L) até o Excel ser corrigido; importadas 508.902,49.*
 
 ## Sprint 6 — Geradores: resumos
-- [ ] Resumo do mês: categorias × zona (Luanda / Província), IVA, Validado / Diferença / Total + IVA.
-- [ ] Mapa Resumo de Validações anual (Jan–Dez) por provider, com **target do provider e target global** e os respectivos desvios.
-- [ ] Formulário de indicadores manuais (`MonthlyIndicators`).
+- [x] Resumo do mês: categorias × zona (Luanda / Província), IVA, Validado / Diferença / Total + IVA.
+- [x] Mapa Resumo de Validações anual (Jan–Dez) por provider, com **target do provider e target global** e os respectivos desvios.
+- [x] Formulário de indicadores manuais (`MonthlyIndicators`).
 
-**Aceitação:** sem erros nem divisões por zero; os valores coincidem com os Excel de Agosto de 2026 (com os mesmos preços).
+**Aceitação:** sem erros nem divisões por zero; os valores coincidem com os Excel de Agosto de 2026 (com os mesmos preços). *(o parque de Agosto confere com o Mapa Resumo real: 1152 = 543 + 575 + 30 + 4 geradores sem data de remoção; 1150 importados por causa dos 2 nºs de série repetidos no Auto. Os valores em Kz do Mapa Resumo estão vazios no ficheiro e o Auto não tem preço de aluguer, por isso não há valores monetários do Excel para comparar)*
 
 ## Sprint 7 — Dashboard
 - [ ] Selector de tipo (Providers / Geradores), só com os tipos permitidos.

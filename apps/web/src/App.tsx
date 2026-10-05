@@ -11,6 +11,7 @@ import ProvidersPage from "./pages/ProvidersPage";
 import SitesPage from "./pages/generators/SitesPage";
 import MapPage from "./pages/generators/MapPage";
 import MapsPage from "./pages/generators/MapsPage";
+import ValidationsPage from "./pages/generators/ValidationsPage";
 import TargetsPage from "./pages/TargetsPage";
 import TeamsPage from "./pages/TeamsPage";
 import UserPermissionsPage from "./pages/UserPermissionsPage";
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="facturacao/providers" element={<RequirePermission module="billing_providers" action="view"><BillingProvidersPage /></RequirePermission>} />
         <Route path="geradores/mapas" element={<RequirePermission module="billing_generators" action="view"><MapsPage /></RequirePermission>} />
         <Route path="geradores/mapas/:id" element={<RequirePermission module="billing_generators" action="view"><MapPage /></RequirePermission>} />
+        <Route path="geradores/validacoes" element={<RequirePermission module="billing_generators" action="view"><ValidationsPage /></RequirePermission>} />
         <Route path="geradores/sites" element={<RequirePermission module="billing_generators" action="view"><SitesPage /></RequirePermission>} />
         <Route path="providers" element={<RequirePermission module="providers" action="view"><ProvidersPage /></RequirePermission>} />
         <Route path="faixas-desconto" element={<RequirePermission module="prices_targets" action="view"><DiscountRulesPage /></RequirePermission>} />
