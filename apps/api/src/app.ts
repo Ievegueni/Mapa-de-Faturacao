@@ -7,6 +7,9 @@ import prismaPlugin, { PrismaPluginOptions } from "./plugins/prisma";
 import authRoutes from "./modules/auth/routes";
 import healthRoutes from "./modules/health/routes";
 import permissionsRoutes from "./modules/permissions/routes";
+import pricesRoutes from "./modules/providers/prices.routes";
+import providersRoutes from "./modules/providers/providers.routes";
+import targetsRoutes from "./modules/providers/targets.routes";
 import teamsRoutes from "./modules/teams/routes";
 import usersRoutes from "./modules/users/routes";
 
@@ -17,6 +20,11 @@ export interface BuildAppOptions {
 
 export function buildApp(opts: BuildAppOptions = {}) {
   const app = Fastify({ logger: opts.logger ?? false });
+
+  // Valores monetários em cêntimos (BigInt) são serializados como string (CLAUDE.md §3).
+  app.setReplySerializer((payload) =>
+    JSON.stringify(payload, (_key, value) => (typeof value === "bigint" ? value.toString() : value)),
+  );
 
   app.register(prismaPlugin, { client: opts.prisma });
   app.register(auditPlugin);
@@ -45,6 +53,9 @@ export function buildApp(opts: BuildAppOptions = {}) {
       api.register(usersRoutes);
       api.register(permissionsRoutes);
       api.register(teamsRoutes);
+      api.register(providersRoutes);
+      api.register(pricesRoutes);
+      api.register(targetsRoutes);
     },
     { prefix: "/api" },
   );

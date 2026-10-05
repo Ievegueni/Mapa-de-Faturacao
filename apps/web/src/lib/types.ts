@@ -53,3 +53,61 @@ export interface PermissionsView {
   overrides: { module: string; action: string; allowed: boolean }[];
   effective: PermissionKey[];
 }
+
+export interface BudgetRow {
+  id: string;
+  providerId: string;
+  teamId: string | null;
+  ano: number;
+  po: string | null;
+  orcamentoMensalCent: string | null;
+  team: TeamRef | null;
+}
+
+export interface ProviderRow {
+  id: string;
+  nome: string;
+  nif: string | null;
+  contacto: string | null;
+  email: string | null;
+  tipos: BillingType[];
+  ativo: boolean;
+  budgets: BudgetRow[];
+}
+
+export interface RentPriceRow {
+  id: string;
+  priceTableId: string;
+  potenciaKVA: number | null;
+  subtipo: string | null;
+  distancia: string | null;
+  precoDiaCent: string | null;
+}
+
+export interface PriceTableRow {
+  id: string;
+  providerId: string;
+  validFrom: string;
+  precoCombustivelCent: string | null;
+  precoServAbastCent: string | null;
+  precoManutencaoCent: string | null;
+  ivaPercent: string | null;
+  rentPrices: RentPriceRow[];
+}
+
+export interface DiscountRuleRow {
+  id: string;
+  horasMin: number;
+  horasMax: number;
+  percent: string;
+  validFrom: string;
+}
+
+export interface TargetRow {
+  id: string;
+  ano: number;
+  mes: number;
+  providerId: string | null;
+  aluguerCent: string | null;
+  combustivelCent: string | null;
+}

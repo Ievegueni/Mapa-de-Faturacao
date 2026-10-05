@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { billingTypeSchema, roleSchema } from "./common";
 
 export const PASSWORD_MIN = 10;
 
@@ -6,8 +7,7 @@ const email = z.string().trim().toLowerCase().email("Email inválido");
 const nome = z.string().trim().min(2, "Nome demasiado curto").max(120);
 const password = z.string().min(PASSWORD_MIN, `A password deve ter pelo menos ${PASSWORD_MIN} caracteres`).max(200);
 
-export const roleSchema = z.enum(["GESTOR", "SUPERVISOR", "TECNICO"]);
-export const billingTypeSchema = z.enum(["PROVIDERS", "GERADORES"]);
+export { billingTypeSchema, roleSchema } from "./common";
 
 export const loginSchema = z.object({
   email,
@@ -70,3 +70,4 @@ export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
 export type TeamCreateInput = z.infer<typeof teamCreateSchema>;
 export type TeamUpdateInput = z.infer<typeof teamUpdateSchema>;
 export type PermissionOverridesInput = z.infer<typeof permissionOverridesSchema>;
+export * from "./config";

@@ -74,7 +74,7 @@ Se `npm install` reclamar de `engines`, **não forçar**: descer de versão. Par
 
 **Sem** Redis, BullMQ, Puppeteer, Chromium ou canvas nativo. O servidor só guarda e calcula dados; os ficheiros são montados no browser.
 
-**Valores monetários:** inteiros em **cêntimos de AOA** (`BigInt`), porque os valores reais têm cêntimos. A API serializa `BigInt` como string. Os litros e as horas são guardados como `Decimal(12,2)`.
+**Valores monetários:** inteiros em **cêntimos de AOA** (`BigInt`), porque os valores reais têm cêntimos. A API serializa `BigInt` como string e recebe cêntimos como string; percentagens (IVA, faixas) são guardadas em pontos percentuais (`14` = 14%). Os litros e as horas são guardados como `Decimal(12,2)`.
 
 ## 4. Estrutura do repositório
 
@@ -234,7 +234,7 @@ model Provider {
 model ProviderBudget {          // PO e orçamento por provider/equipa/ano
   id String @id @default(cuid())
   providerId String
-  teamId String
+  teamId String?                // vazio = todas as equipas (por omissão); a linha da equipa sobrepõe-se
   ano Int
   po String?
   orcamentoMensalCent BigInt?
@@ -584,7 +584,7 @@ GET    /audit                               ?entity&userId&from&to
 ## 15. Seed inicial
 
 - Utilizador Gestor (email e password vêm do `.env`).
-- Providers: Anglobal (PO 4500614726), Blinder (PO 4500614723), Comatel (PO em branco), todos com orçamento mensal de 2.950.000,00.
+- Providers: Anglobal (PO 4500614726), Blinder (PO 4500614723), Comatel (PO em branco), todos com orçamento mensal de 2.950.000,00 (linha por omissão, sem equipa, para o ano corrente ou `SEED_ANO`).
 - Faixas de desconto da rede: 0–5 → 0%, 6–11 → 35%, 12–17 → 45%, 18–24 → 55%.
 - Tabela de preços Anglobal: combustível 420,00, serviço de abastecimento 48,00, IVA 14%. **Aluguer, manutenção e penalizações ficam em branco.**
 - **Equipas: nenhuma.** São criadas na ferramenta.

@@ -24,6 +24,14 @@ const SECTIONS: MenuSection[] = [
     ],
   },
   {
+    title: "Configuração",
+    items: [
+      { to: "/providers", label: "Providers e preços", icon: "M3 7h18M3 12h18M3 17h12M17 17l2 2 3-4", permission: ["providers", "view"] },
+      { to: "/faixas-desconto", label: "Faixas de desconto", icon: "M19 5 5 19M6.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm11 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z", permission: ["prices_targets", "view"] },
+      { to: "/targets", label: "Targets", icon: "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-4a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm0-4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z", permission: ["prices_targets", "view"] },
+    ],
+  },
+  {
     title: "Administração",
     items: [
       { to: "/utilizadores", label: "Utilizadores", icon: "M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm13 9v-1a4 4 0 0 0-3-3.87M16 4.13a3 3 0 0 1 0 5.74", permission: ["users", "view"] },

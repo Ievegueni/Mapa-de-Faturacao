@@ -35,14 +35,14 @@
 - Um override "negar export" esconde o botão e bloqueia o endpoint.
 
 ## Sprint 2 — Providers, preços e targets (configuração)
-- [ ] Página única de providers: CRUD com tipos servidos e, por equipa/ano, PO e orçamento mensal.
-- [ ] Separador **Preços**:
+- [x] Página única de providers: CRUD com tipos servidos e, por equipa/ano, PO e orçamento mensal.
+- [x] Separador **Preços**:
   - Tabela com vigência: combustível, serviço de abastecimento, manutenção, IVA.
   - Linhas de aluguer por potência, subtipo e distância.
   - **Todos os campos podem ficar vazios e ser editados depois.**
-- [ ] Página **Faixas de desconto da rede** (editável).
-- [ ] Página **Targets**: grelha ano × mês com uma linha **Global** e uma linha por provider (aluguer e combustível), editável e com campos vazios permitidos.
-- [ ] Seed: providers, faixas e preços 420 / 48 / IVA 14%. O resto fica em branco.
+- [x] Página **Faixas de desconto da rede** (editável).
+- [x] Página **Targets**: grelha ano × mês com uma linha **Global** e uma linha por provider (aluguer e combustível), editável e com campos vazios permitidos.
+- [x] Seed: providers, faixas e preços 420 / 48 / IVA 14%. O resto fica em branco.
 
 **Aceitação:**
 - Um preço ou target deixado em branco grava como `null` e aparece como "—".

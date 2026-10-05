@@ -27,17 +27,20 @@ export function Button({
 }
 
 const fieldClass =
-  "block w-full rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-ink-50";
+  "block rounded-lg border border-ink-200 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-ink-50";
+
+/** Largura total por omissão, excepto quando o `className` já define uma largura base (ex.: `w-28`). */
+const width = (className: string) => (/(^|\s)(w-|min-w-)/.test(className) ? "" : "w-full");
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(function Input(
   { className = "", ...props },
   ref,
 ) {
-  return <input ref={ref} {...props} className={`${fieldClass} ${className}`} />;
+  return <input ref={ref} {...props} className={`${fieldClass} ${width(className)} ${className}`} />;
 });
 
 export function Select({ className = "", ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={`${fieldClass} ${className}`} />;
+  return <select {...props} className={`${fieldClass} ${width(className)} ${className}`} />;
 }
 
 /** `group`: para conjuntos de checkboxes (evita `<label>` aninhados). */

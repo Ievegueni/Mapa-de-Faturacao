@@ -35,11 +35,12 @@ model User {
 }
 
 model Team {
-  id      String       @id @default(cuid())
-  nome    String       @unique
+  id      String           @id @default(cuid())
+  nome    String           @unique
   tipo    BillingType
-  ativo   Boolean      @default(true)
+  ativo   Boolean          @default(true)
   members TeamMember[]
+  budgets ProviderBudget[]
 }
 
 model TeamMember {
@@ -60,6 +61,89 @@ model UserPermission {
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, module, action])
+}
+
+// ---------- Página única de providers ----------
+
+model Provider {
+  id          String           @id @default(cuid())
+  nome        String           @unique
+  nif         String?
+  contacto    String?
+  email       String?
+  tipos       BillingType[]
+  ativo       Boolean          @default(true)
+  budgets     ProviderBudget[]
+  priceTables PriceTable[]
+  targets     Target[]
+}
+
+/// PO e orçamento mensal por provider/equipa/ano. teamId vazio = aplica-se a todas as equipas
+/// (valor por omissão; uma linha da equipa sobrepõe-se). Índice único parcial na migração.
+model ProviderBudget {
+  id                  String   @id @default(cuid())
+  providerId          String
+  teamId              String?
+  ano                 Int
+  po                  String?
+  orcamentoMensalCent BigInt?
+  provider            Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  team                Team?    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, teamId, ano])
+  @@index([ano])
+}
+
+/// Preços — TODOS os valores podem ficar em branco e ser preenchidos na ferramenta.
+model PriceTable {
+  id                   String      @id @default(cuid())
+  providerId           String
+  validFrom            DateTime    @db.Date
+  precoCombustivelCent BigInt?
+  precoServAbastCent   BigInt?
+  precoManutencaoCent  BigInt?
+  ivaPercent           Decimal?    @db.Decimal(5, 2)
+  provider             Provider    @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  rentPrices           RentPrice[]
+
+  @@unique([providerId, validFrom])
+}
+
+/// Preço de aluguer por dia (linhas criadas e editadas na UI).
+model RentPrice {
+  id           String     @id @default(cuid())
+  priceTableId String
+  potenciaKVA  Int?
+  subtipo      String?    /// vazio = aplica-se a todos
+  distancia    String?    /// vazio = aplica-se a todas
+  precoDiaCent BigInt?
+  priceTable   PriceTable @relation(fields: [priceTableId], references: [id], onDelete: Cascade)
+
+  @@index([priceTableId])
+}
+
+/// Faixas de desconto da rede (horas de rede por dia → %), editáveis na UI.
+model GridDiscountRule {
+  id        String   @id @default(cuid())
+  horasMin  Int
+  horasMax  Int
+  percent   Decimal  @db.Decimal(5, 2)
+  validFrom DateTime @db.Date
+
+  @@index([validFrom])
+}
+
+/// Targets — providerId vazio = target GLOBAL. Índice único parcial para o global na migração.
+model Target {
+  id              String    @id @default(cuid())
+  ano             Int
+  mes             Int
+  providerId      String?
+  aluguerCent     BigInt?
+  combustivelCent BigInt?
+  provider        Provider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([ano, mes, providerId])
 }
 
 model AuditLog {
