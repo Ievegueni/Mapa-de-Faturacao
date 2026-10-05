@@ -22,7 +22,7 @@ const SECTIONS: MenuSection[] = [
   {
     items: [
       { to: "/meu-trabalho", label: "O meu trabalho", icon: "M4 6h16M4 12h16M4 18h10", roles: ["TECNICO"] },
-      { to: "/dashboard", label: "Dashboard", icon: "M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z", permission: ["dashboard", "view"], roles: ["GESTOR", "SUPERVISOR"] },
+      { to: "/dashboard", label: "Dashboard", icon: "M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z", permission: ["dashboard", "view"] },
     ],
   },
   {

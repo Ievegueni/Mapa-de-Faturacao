@@ -24,7 +24,7 @@ export default function App() {
       <Route path="/trocar-password" element={<RequireAuth><ChangePasswordPage /></RequireAuth>} />
       <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
         <Route index element={<HomeRedirect />} />
-        <Route path="dashboard" element={<RequireRole roles={["GESTOR", "SUPERVISOR"]}><RequirePermission module="dashboard" action="view"><DashboardPage /></RequirePermission></RequireRole>} />
+        <Route path="dashboard" element={<RequirePermission module="dashboard" action="view"><DashboardPage /></RequirePermission>} />
         <Route path="meu-trabalho" element={<RequireRole roles={["TECNICO"]}><MyWorkPage /></RequireRole>} />
         <Route path="utilizadores" element={<RequirePermission module="users" action="view"><UsersPage /></RequirePermission>} />
         <Route path="utilizadores/:id/permissoes" element={<RequirePermission module="users" action="view"><UserPermissionsPage /></RequirePermission>} />

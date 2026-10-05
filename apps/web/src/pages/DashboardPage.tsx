@@ -1,35 +1,108 @@
-import { BILLING_TYPE_LABELS, ROLE_LABELS } from "@cf/shared";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { BILLING_TYPE_LABELS, MONTHS_FULL } from "@cf/shared";
+import { Tabs } from "../components/Tabs";
+import { Alert, PageHeader, Select, Spinner, errorMessage } from "../components/ui";
 import { useAuth } from "../hooks/useAuth";
-import { Badge, Card, PageHeader } from "../components/ui";
+import { usePermission } from "../hooks/usePermission";
+import { api } from "../lib/api";
+import type { BillingOptions, DashboardResponse, GeneratorOptions, TeamRow } from "../lib/types";
+import { yearOptions } from "../lib/years";
+import GeneratorsDashboard from "./dashboard/GeneratorsDashboard";
+import ProvidersDashboard from "./dashboard/ProvidersDashboard";
 
-/** Dashboard (Sprint 7). Por agora mostra o âmbito do utilizador. */
+type Tipo = "PROVIDERS" | "GERADORES";
+
 export default function DashboardPage() {
   const { user } = useAuth();
-  if (!user) return null;
-  const global = user.role === "GESTOR";
+  const isGestor = user?.role === "GESTOR";
+  const canTeams = usePermission("teams", "view");
+  const [tipo, setTipo] = useState<Tipo | "">("");
+  const [ano, setAno] = useState(new Date().getFullYear());
+  const [mes, setMes] = useState("");
+  const [teamId, setTeamId] = useState("");
+  const [providerId, setProviderId] = useState("");
+
+  const qs = new URLSearchParams({ ano: String(ano) });
+  if (tipo) qs.set("tipo", tipo);
+  if (mes && tipo === "GERADORES") qs.set("mes", mes);
+  if (teamId) qs.set("teamId", teamId);
+  if (providerId) qs.set("providerId", providerId);
+  const data = useQuery({ queryKey: ["dashboard", tipo, ano, mes, teamId, providerId], queryFn: () => api<DashboardResponse>(`/dashboard?${qs}`), keepPreviousData: true });
+  const current = (tipo || data.data?.tipo || "") as Tipo | "";
+
+  useEffect(() => {
+    if (!tipo && data.data?.tipo) setTipo(data.data.tipo);
+  }, [data.data, tipo]);
+
+  const teams = useQuery({ queryKey: ["teams", "true"], queryFn: () => api<TeamRow[]>("/teams?ativo=true"), enabled: isGestor && canTeams });
+  const provOpts = useQuery({
+    queryKey: ["dash-providers", current],
+    queryFn: async () =>
+      current === "PROVIDERS" ? (await api<BillingOptions>("/billing/providers/options")).providers : (await api<GeneratorOptions>("/generators/options")).providers,
+    enabled: !!current,
+  });
+
+  const d = data.data;
+  const tipos = d?.tipos ?? [];
+  const avisos = (current === "PROVIDERS" ? d?.providers?.avisos : d?.geradores?.avisos) ?? [];
 
   return (
     <>
-      <PageHeader title="Dashboard" subtitle={global ? "Visão global" : "Visão das suas equipas"} />
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="p-5">
-          <div className="text-xs font-semibold uppercase tracking-wider text-ink-400">Perfil</div>
-          <div className="mt-2 text-lg font-semibold text-navy-950">{ROLE_LABELS[user.role]}</div>
-        </Card>
-        <Card className="p-5">
-          <div className="text-xs font-semibold uppercase tracking-wider text-ink-400">Tipos de facturação</div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {user.billingTypes.length ? user.billingTypes.map((t) => <Badge key={t} tone="brand">{BILLING_TYPE_LABELS[t]}</Badge>) : <span className="text-sm text-ink-400">—</span>}
-          </div>
-        </Card>
-        <Card className="p-5">
-          <div className="text-xs font-semibold uppercase tracking-wider text-ink-400">Equipas</div>
-          <div className="mt-2 text-sm text-ink-700">
-            {global ? "Todas" : user.teams.length ? user.teams.map((t) => t.nome).join(", ") : "Sem equipa atribuída"}
-          </div>
-        </Card>
-      </div>
-      <Card className="mt-6 p-6 text-sm text-ink-500">Os indicadores e gráficos de Providers e Geradores ficam disponíveis no Sprint 7.</Card>
+      <PageHeader title="Dashboard" subtitle={isGestor ? "Visão global" : user?.role === "TECNICO" ? "Resumo das suas equipas" : "Visão das suas equipas"} />
+      {tipos.length > 1 && (
+        <Tabs<Tipo>
+          value={current as Tipo}
+          onChange={(v) => { setTipo(v); setProviderId(""); setTeamId(""); }}
+          items={tipos.map((t) => ({ value: t, label: t === "GERADORES" ? "Controlo de Geradores" : BILLING_TYPE_LABELS[t] }))}
+        />
+      )}
+      {tipos.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          <Select value={ano} onChange={(e) => setAno(Number(e.target.value))} className="w-24" aria-label="Ano">
+            {yearOptions().map((y) => <option key={y} value={y}>{y}</option>)}
+          </Select>
+          {current === "GERADORES" && (
+            <Select value={mes} onChange={(e) => setMes(e.target.value)} className="w-44" aria-label="Mês">
+              <option value="">Último mês com dados</option>
+              {MONTHS_FULL.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
+            </Select>
+          )}
+          {isGestor && (teams.data?.length ?? 0) > 0 && (
+            <Select value={teamId} onChange={(e) => setTeamId(e.target.value)} className="w-48" aria-label="Equipa">
+              <option value="">Todas as equipas</option>
+              {teams.data!.filter((t) => t.tipo === current).map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
+            </Select>
+          )}
+          <Select value={providerId} onChange={(e) => setProviderId(e.target.value)} className="w-44" aria-label="Provider">
+            <option value="">Todos os providers</option>
+            {provOpts.data?.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
+          </Select>
+        </div>
+      )}
+      {avisos.length > 0 && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800" role="status">
+          <div className="font-semibold">⚠ Dados de configuração em falta</div>
+          <ul className="mt-1 list-disc pl-5">{avisos.map((a) => <li key={a}>{a}</li>)}</ul>
+        </div>
+      )}
+      {data.isLoading ? (
+        <Spinner />
+      ) : data.error ? (
+        <Alert>{errorMessage(data.error)}</Alert>
+      ) : !d || tipos.length === 0 ? (
+        <Alert kind="info">Ainda não tem acesso a nenhum tipo de facturação. Peça ao Gestor para o associar a uma equipa.</Alert>
+      ) : current === "PROVIDERS" && d.providers ? (
+        <ProvidersDashboard data={d.providers} simplified={d.simplificado} />
+      ) : current === "GERADORES" && d.geradores ? (
+        d.geradores.kpis.mapas === 0 && d.geradores.mesesComDados.length === 0 ? (
+          <Alert kind="info">Sem mapas de geradores em {ano}.</Alert>
+        ) : (
+          <GeneratorsDashboard data={d.geradores} simplified={d.simplificado} />
+        )
+      ) : (
+        <Spinner />
+      )}
     </>
   );
 }

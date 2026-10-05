@@ -5,6 +5,7 @@ import auditPlugin from "./plugins/audit";
 import authPlugin from "./plugins/auth";
 import prismaPlugin, { PrismaPluginOptions } from "./plugins/prisma";
 import authRoutes from "./modules/auth/routes";
+import dashboardRoutes from "./modules/dashboard/routes";
 import billingProvidersRoutes from "./modules/billing-providers/routes";
 import importRoutes from "./modules/generators/import/routes";
 import mapsRoutes from "./modules/generators/maps.routes";
@@ -68,6 +69,7 @@ export function buildApp(opts: BuildAppOptions = {}) {
       api.register(measurementsRoutes);
       api.register(importRoutes);
       api.register(summaryRoutes);
+      api.register(dashboardRoutes);
     },
     { prefix: "/api" },
   );

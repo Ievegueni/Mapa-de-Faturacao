@@ -96,12 +96,12 @@
 **Aceitação:** sem erros nem divisões por zero; os valores coincidem com os Excel de Agosto de 2026 (com os mesmos preços). *(o parque de Agosto confere com o Mapa Resumo real: 1152 = 543 + 575 + 30 + 4 geradores sem data de remoção; 1150 importados por causa dos 2 nºs de série repetidos no Auto. Os valores em Kz do Mapa Resumo estão vazios no ficheiro e o Auto não tem preço de aluguer, por isso não há valores monetários do Excel para comparar)*
 
 ## Sprint 7 — Dashboard
-- [ ] Selector de tipo (Providers / Geradores), só com os tipos permitidos.
-- [ ] KPIs e gráficos (Recharts) do §10 do `CLAUDE.md`.
-- [ ] Âmbito por perfil; versão simplificada para o Técnico.
-- [ ] Aviso visível quando faltam preços ou targets.
+- [x] Selector de tipo (Providers / Geradores), só com os tipos permitidos.
+- [x] KPIs e gráficos (Recharts) do §10 do `CLAUDE.md`.
+- [x] Âmbito por perfil; versão simplificada para o Técnico.
+- [x] Aviso visível quando faltam preços ou targets.
 
-**Aceitação:** o dashboard carrega em menos de 2 s com 12 meses de dados.
+**Aceitação:** o dashboard carrega em menos de 2 s com 12 meses de dados. *(API: 37 ms com 12 meses × 1.200 medições; no browser, troca de separador em ~0,2 s)*
 
 ## Sprint 8 — Relatórios (no browser)
 - [ ] Página de relatórios: tipo de facturação → modelo → filtros → pré-visualização.

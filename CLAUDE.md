@@ -556,6 +556,12 @@ Implementar em `packages/shared/calc/generators.ts`, como funções puras com te
   - Top 10 sites por litros.
   - Flags pendentes, incluindo preços em falta.
 - **Filtros:** ano, mês, equipa (só para o Gestor) e provider.
+- **Implementação:** um só pedido `GET /dashboard` com tudo agregado na BD (somas por mapa, `unnest(flags)`, agrupamentos por região/potência/site).
+  - Mês por omissão: o último mês do ano com mapas.
+  - Facturas pendentes: submetidas ou com status diferente de Fechado.
+  - Target global compara com todos os providers no âmbito, mesmo com filtro de provider.
+  - Avisos: tabela de preços em falta ou incompleta (combustível, serviço, aluguer, IVA), target do provider e target global em falta, providers sem orçamento.
+  - Técnico: versão simplificada (KPIs, consumo do orçamento e avisos; sem gráficos). O Dashboard aparece no menu de todos os perfis com `dashboard.view`.
 
 ## 11. Relatórios (gerados no browser)
 
@@ -684,6 +690,6 @@ module.exports = {
 };
 ```
 
-- Gráficos (Recharts) e exportações PDF/Excel usam as mesmas cores: série principal `brand-500`, secundária `navy-950`, restantes em tons `navy`/`ink`. Cabeçalhos de tabelas no PDF/Excel em `navy-950` com texto branco.
+- Gráficos (Recharts) e exportações PDF/Excel usam as escalas da marca. **Paleta categórica dos gráficos** (ordem fixa, validada para luminosidade, croma, daltonismo e contraste ≥ 3:1): `brand-600` #dc6f00, `navy-400` #5f55b5, `brand-700` #b35700, `navy-300` #8a82cf (`apps/web/src/components/charts.tsx`). O `brand-500` (contraste 2,5:1) e o `navy-950` (demasiado escuro) falham a validação como cor de série; continuam nos botões, títulos e cabeçalhos. Cabeçalhos de tabelas no PDF/Excel em `navy-950` com texto branco.
 - Não usar cores fora destas escalas (excepto vermelho/verde/âmbar para estados e alertas).
 - Verificar `engines` de `@fontsource-variable/inter` antes de instalar (Node 16).

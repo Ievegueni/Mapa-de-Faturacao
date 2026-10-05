@@ -419,3 +419,35 @@ export interface ValidationsResponse {
   meses: ValidationMonth[];
   mapas: { id: string; mes: number; teamId: string; state: RecordStateT }[];
 }
+
+interface Cmp {
+  valor: string;
+  target: string | null;
+  percent: number | null;
+}
+
+export interface DashboardResponse {
+  tipos: ("PROVIDERS" | "GERADORES")[];
+  tipo: "PROVIDERS" | "GERADORES" | null;
+  ano: number;
+  simplificado: boolean;
+  providers?: {
+    kpis: { orcamentoAnual: string | null; facturado: string; pago: string; divida: string; remanescente: string | null; execucaoPercent: number | null };
+    porProvider: { providerId: string; nome: string; orcamentoAnual: string | null; facturado: string; remanescente: string | null; execucaoPercent: number | null; mesesAcimaOrcamento: number[] }[];
+    mensal: { mes: number; total: string; porProvider: Record<string, string> }[];
+    pendentes: { id: string; provider: string; equipa: string; ano: number; mes: number; numeroFactura: string | null; valorFTCent: string; dividaCent: string; status: InvoiceStatusT; state: RecordStateT }[];
+    avisos: string[];
+  };
+  geradores?: {
+    mes: number;
+    mesesComDados: number[];
+    kpis: { total: string; aluguer: string; combustivel: string; servAbast: string; litros: string; descontoRede: string; penalizacoes: string; geradores: number; mapas: number; porValidar: number };
+    comparacao: { global: { aluguerManut: Cmp; abastecimento: Cmp }; providers: { providerId: string; nome: string; aluguerManut: Cmp; abastecimento: Cmp }[] };
+    evolucao: { mes: number; total: string | null; aluguerManut: string | null; abastecimento: string | null; litros: string | null }[];
+    regioes: { regiao: string; total: string; litros: string; geradores: number }[];
+    potencias: { potencia: string; geradores: number }[];
+    topSites: { siteId: string; nome: string; codigoPP: string | null; provincia: string; litros: string }[];
+    flags: { flag: string; n: number }[];
+    avisos: string[];
+  };
+}
