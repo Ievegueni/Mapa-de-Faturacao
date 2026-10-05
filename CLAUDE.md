@@ -506,6 +506,17 @@ Implementar em `packages/shared/calc/generators.ts`, como funções puras com te
    - As medições ficam em RASCUNHO.
    - Regista a operação no `AuditLog`.
 
+**Detalhes de implementação (verificados com o Auto de Medição real de Agosto de 2026):**
+- O ficheiro real tem tabelas com filtro por cor que o leitor normal do `exceljs` não abre: usar o **leitor em streaming** (`ExcelJS.stream.xlsx.WorkbookReader`).
+- Nomes de coluna comparados sem acentos, pontuação, quebras de linha e sufixos como `.420` ("Litros Abastecidos.420").
+- Se várias folhas tiverem o cabeçalho (ex.: `AGOSTO_26` e `Carregamento`), usa a primeira; a pré-visualização permite escolher outra.
+- Os preços do Excel são ignorados: aplicam-se os da `PriceTable` do provider do mapa.
+- Site identificado por **código P.P. + nome** na equipa (há sites diferentes com o mesmo código, e sites com 2 geradores); o código P.P. não é único.
+- Erros (linha não importada): nome, nº de série, região ou província em falta/inválidos; **nº de série repetido no ficheiro**; gerador de outra equipa; medição já submetida/validada.
+- Avisos (linha importada): código P.P. partilhado por sites diferentes; proprietário não encontrado ou diferente do provider do mapa; gerador que mudou de site.
+- Reimportar substitui os rascunhos do mapa; penalizações e extras vazios no ficheiro mantêm os valores preenchidos na ferramenta.
+- O ficheiro real não vai para o repositório (`apps/api/test/fixtures/*.xlsx` está no `.gitignore`); os testes que o usam correm só se estiver presente.
+
 ### 9.2 Formulário por site
 - Pesquisa por código P.P., nome ou nº de série.
 - `horasN1` é preenchido automaticamente com `horasN` do mês anterior.
@@ -515,6 +526,10 @@ Implementar em `packages/shared/calc/generators.ts`, como funções puras com te
 
 ### 9.3 Fluxo de estados
 `RASCUNHO` (Técnico) → `SUBMETIDO` → `VALIDADO` (Supervisor) → `FECHADO` (fecho do mês; só o Gestor reabre).
+
+- As acções são por mapa e aplicam-se às medições: submeter (quem não valida só submete as suas), validar, devolver (submetidas/validadas → rascunho), fechar (só com todas validadas), reabrir (Gestor; volta a Validado).
+- O estado do mapa segue o estado menos avançado das medições, excepto Fechado.
+- Recalcular e alterar medições submetidas/validadas: só quem valida. Média de litros (`LITROS_ACIMA_MEDIA`): média por linha do site nos 3 meses anteriores, nos mapas da mesma equipa.
 
 ## 10. Dashboard
 

@@ -230,3 +230,114 @@ export interface Paged<T> {
   page: number;
   pageSize: number;
 }
+
+export interface MapStats {
+  medicoes: number;
+  totalCent: string;
+  aluguerCent: string;
+  combustivelCent: string;
+  servAbastCent: string;
+  descontoRedeCent: string;
+  litros: string;
+  porEstado: Record<string, number>;
+  flags: Record<string, number>;
+}
+
+export interface GeneratorMapRow {
+  id: string;
+  teamId: string;
+  providerId: string;
+  ano: number;
+  mes: number;
+  state: RecordStateT;
+  closedAt: string | null;
+  team: { id: string; nome: string };
+  provider: { id: string; nome: string };
+  closedBy: { id: string; nome: string } | null;
+  stats: MapStats;
+}
+
+export interface GeneratorMapDetail extends GeneratorMapRow {
+  priceTable: (Omit<PriceTableRow, "validFrom"> & { validFrom: string }) | null;
+  bands: { horasMin: number; horasMax: number; percent: string; validFrom: string }[];
+}
+
+export interface MeasurementRow {
+  id: string;
+  mapId: string;
+  siteId: string;
+  generatorId: string;
+  dias: number;
+  horasN1: string | null;
+  horasN: string | null;
+  litros: string | null;
+  precoCombustivelCent: string | null;
+  precoServAbastCent: string | null;
+  precoAluguerDiaCent: string | null;
+  precoManutencaoCent: string | null;
+  servExtrasCent: string | null;
+  penExcessoHorasCent: string | null;
+  penSLACent: string | null;
+  penNivelCombustCent: string | null;
+  penAvariaCent: string | null;
+  horasTrabalhadas: number | null;
+  horasRede: number | null;
+  descontoPercent: string | null;
+  combustivelCent: string;
+  servAbastCent: string;
+  abastecimentoCent: string;
+  aluguerCent: string;
+  descontoRedeCent: string;
+  totalCent: string;
+  flags: string[];
+  state: RecordStateT;
+  createdById: string;
+  site: { id: string; nome: string; codigoPP: string | null; regiao: string; provincia: string; subtipo: string | null; distanciaFacturacao: string | null };
+  generator: { id: string; numeroSerie: string; potenciaKVA: number | null; dataRemocao: string | null };
+  createdBy: { id: string; nome: string };
+}
+
+export interface MeasurementList extends Paged<MeasurementRow> {
+  totals: { litros: string; combustivelCent: string; servAbastCent: string; aluguerCent: string; descontoRedeCent: string; totalCent: string };
+}
+
+export interface MapGeneratorItem {
+  id: string;
+  numeroSerie: string;
+  potenciaKVA: number | null;
+  site: { id: string; nome: string; codigoPP: string | null; provincia: string };
+  measurement: { id: string; state: RecordStateT; flags: string[]; totalCent: string } | null;
+}
+
+export interface GeneratorFormContext {
+  generator: { id: string; numeroSerie: string; potenciaKVA: number | null; dataRemocao: string | null };
+  site: SiteRow;
+  measurement: MeasurementRow | null;
+  horasNMesAnterior: string | null;
+  mediaLitros3m: string | null;
+}
+
+export interface ImportPreview {
+  token: string;
+  expiraEm: string;
+  ficheiro: string;
+  folhas: string[];
+  folha: string;
+  linhaCabecalho: number;
+  linhasLidas: number;
+  semPrecos: boolean;
+  linhasValidas: number;
+  sitesNovos: number;
+  sitesActualizados: number;
+  geradoresNovos: number;
+  geradoresActualizados: number;
+  medicoesNovas: number;
+  medicoesActualizadas: number;
+  litrosFicheiro: string;
+  litrosValidos: string;
+  totais: { combustivelCent: string; servAbastCent: string; aluguerCent: string; descontoRedeCent: string; totalCent: string };
+  flags: Record<string, number>;
+  erros: { line: number; message: string }[];
+  avisos: { line: number; message: string }[];
+  amostra: { linha: number; site: string; codigoPP: string | null; numeroSerie: string; novo: boolean; dias: number; litros: string | null; horasRede: number | null; descontoPercent: string | null; totalCent: string; flags: string[] }[];
+}

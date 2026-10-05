@@ -23,7 +23,7 @@ export function setSessionExpiredHandler(fn: () => void) {
 
 async function request(path: string, init: RequestInit = {}): Promise<Response> {
   const headers: Record<string, string> = { ...(init.headers as Record<string, string>) };
-  if (init.body !== undefined) headers["Content-Type"] = "application/json";
+  if (init.body !== undefined && !(init.body instanceof FormData)) headers["Content-Type"] = "application/json";
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
   return fetch(`/api${path}`, { ...init, headers, credentials: "include" });
 }
@@ -66,3 +66,6 @@ export const apiPost = <T>(path: string, data?: unknown) =>
 export const apiPatch = <T>(path: string, data: unknown) => api<T>(path, { method: "PATCH", body: JSON.stringify(data) });
 export const apiPut = <T>(path: string, data: unknown) => api<T>(path, { method: "PUT", body: JSON.stringify(data) });
 export const apiDelete = <T>(path: string) => api<T>(path, { method: "DELETE" });
+
+/** Envio de ficheiro (multipart/form-data). */
+export const apiUpload = <T>(path: string, form: FormData) => api<T>(path, { method: "POST", body: form });

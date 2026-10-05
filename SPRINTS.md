@@ -61,30 +61,32 @@
 
 ## Sprint 4 — Geradores: cálculos e dados mestre
 - [x] `packages/shared/calc/generators.ts` com todas as fórmulas do §7 do `CLAUDE.md`, incluindo o tratamento de valores vazios e as flags `SEM_PRECO_*`.
-- [~] Testes Vitest com pelo menos 10 linhas reais de Agosto de 2026 e casos-limite: horas negativas, dias 0, limites das faixas, potência em texto, preços vazios. *(casos-limite feitos; 10 linhas ilustrativas a substituir pelas reais quando houver o Excel)*
+- [x] Testes Vitest com pelo menos 10 linhas reais de Agosto de 2026 e casos-limite: horas negativas, dias 0, limites das faixas, potência em texto, preços vazios. *(11 linhas reais)*
 - [x] Schema: `Site`, `Generator`, `GeneratorMonthlyMap`, `GeneratorMeasurement`, `MonthlyIndicators`.
 - [x] CRUD de Sites e Geradores, com pesquisa e filtros.
 
-**Aceitação:** os testes passam e os resultados batem com o Excel. *(testes passam; falta comparar com o Excel)*
+**Aceitação:** os testes passam e os resultados batem com o Excel. *(horas trabalhadas 1063/1063, horas de rede 1160/1160 e % de desconto 1130/1130 iguais aos valores em cache do Excel)*
 
 ## Sprint 5 — Geradores: importação e formulário
-- [ ] Importação em dois passos: preview (exceljs, mapeamento pelo cabeçalho, normalização) e depois confirmação (transacção em lotes de 200).
-- [ ] Formulário por site:
+- [x] Importação em dois passos: preview (exceljs, mapeamento pelo cabeçalho, normalização) e depois confirmação (transacção em lotes de 200).
+- [x] Formulário por site:
   - Pesquisa.
   - `horasN1` do mês anterior.
   - Penalizações e extras em branco.
   - Cálculo em tempo real.
   - Enter grava e avança para o site seguinte.
-- [ ] Lista de medições:
+- [x] Lista de medições:
   - Paginação no servidor (50 por página).
   - Filtro por flag.
   - Edição em linha (Supervisor).
-- [ ] Botão **Recalcular mapa** (aplica os preços actuais às medições ainda não fechadas).
-- [ ] Fluxo: submeter, validar, fechar; reabrir só pelo Gestor.
+- [x] Botão **Recalcular mapa** (aplica os preços actuais às medições ainda não fechadas).
+- [x] Fluxo: submeter, validar, fechar; reabrir só pelo Gestor.
 
 **Aceitação:**
 - O Auto de Medição de Agosto de 2026 (1.161 linhas) é importado em menos de 30 s numa VPS modesta.
 - O total de litros coincide com o Excel.
+
+*Resultado com o ficheiro real: 1.161 linhas lidas e gravadas em ~1 s. Litros no ficheiro: 509.812,49 (igual ao Excel). 2 linhas com nº de série repetido ficam de fora (410 + 500 L) até o Excel ser corrigido; importadas 508.902,49.*
 
 ## Sprint 6 — Geradores: resumos
 - [ ] Resumo do mês: categorias × zona (Luanda / Província), IVA, Validado / Diferença / Total + IVA.

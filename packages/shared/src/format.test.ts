@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDate, formatKz } from "./format";
+import { formatDate, formatDecimal, formatKz } from "./format";
 
 describe("formatKz", () => {
   it("formata cêntimos com separadores de Angola", () => {
@@ -26,5 +26,15 @@ describe("formatDate", () => {
   it("mostra — para vazio ou inválido", () => {
     expect(formatDate(null)).toBe("—");
     expect(formatDate("abc")).toBe("—");
+  });
+});
+
+describe("formatDecimal", () => {
+  it("formata litros e horas", () => {
+    expect(formatDecimal("509812.49")).toBe("509.812,49");
+    expect(formatDecimal(1996)).toBe("1.996,00");
+    expect(formatDecimal("12.5", 1)).toBe("12,5");
+    expect(formatDecimal(-3, 0)).toBe("-3");
+    expect(formatDecimal(null)).toBe("—");
   });
 });

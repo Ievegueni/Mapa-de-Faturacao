@@ -24,3 +24,13 @@ export function formatDate(value: Date | string | null | undefined): string {
   const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
   return `${dd}/${mm}/${d.getUTCFullYear()}`;
 }
+
+/** Decimal ("509812.49", 509812.49, Decimal) → "509.812,49"; vazio → "—". `digits` = casas decimais mostradas. */
+export function formatDecimal(value: { toString(): string } | number | null | undefined, digits = 2): string {
+  if (value === null || value === undefined || value === "") return EMPTY;
+  const n = typeof value === "number" ? value : Number(value.toString());
+  if (!Number.isFinite(n)) return EMPTY;
+  const [int, frac] = Math.abs(n).toFixed(digits).split(".");
+  const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${n < 0 ? "-" : ""}${grouped}${frac ? `,${frac}` : ""}`;
+}
