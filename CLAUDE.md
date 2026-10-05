@@ -234,7 +234,7 @@ model Provider {
 model ProviderBudget {          // PO e orçamento por provider/equipa/ano
   id String @id @default(cuid())
   providerId String
-  teamId String?                // vazio = todas as equipas (por omissão); a linha da equipa sobrepõe-se
+  teamId String?                // vazio = todas as equipas (por omissão); a linha da equipa sobrepõe-se campo a campo (PO ou orçamento vazios herdam da linha por omissão)
   ano Int
   po String?
   orcamentoMensalCent BigInt?
@@ -469,6 +469,10 @@ Implementar em `packages/shared/calc/generators.ts`, como funções puras com te
 - Remanescente = orçamento anual − facturado no ano.
 - % de execução = facturado / orçamento anual.
 - Alerta quando o facturado de um provider num mês é maior que o orçamento mensal.
+- Orçamento de um provider num conjunto de equipas = soma, por equipa, do orçamento aplicável (equipa → por omissão).
+- O PO é preenchido a partir do orçamento aplicável e guardado com a factura.
+- Fluxo: `RASCUNHO` → `SUBMETIDO` → `VALIDADO` (devolver: Submetido → Rascunho; reabrir: só o Gestor, Validado → Submetido). Quem não pode validar só altera os seus rascunhos. Factura validada: só valor pago, status e observação.
+- O resumo inclui todas as facturas do ano; a opção "Só facturas validadas" limita a Validado/Fechado.
 - A inserção mantém **exactamente** os campos actuais:
   - Parceiro, PO (preenchido automaticamente), ano, mês, tipo, nº factura.
   - Data de facturação, data de execução, OTs, consumíveis.

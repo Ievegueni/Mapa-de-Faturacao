@@ -21,26 +21,43 @@ enum BillingType {
   GERADORES
 }
 
+enum InvoiceStatus {
+  ABERTO
+  ANDAMENTO
+  PENDENTE
+  FECHADO
+}
+
+enum RecordState {
+  RASCUNHO
+  SUBMETIDO
+  VALIDADO
+  FECHADO
+}
+
 model User {
-  id                  String           @id @default(cuid())
+  id                  String            @id @default(cuid())
   nome                String
-  email               String           @unique
+  email               String            @unique
   passwordHash        String
   role                Role
-  ativo               Boolean          @default(true)
-  mustChangePassword  Boolean          @default(true)
+  ativo               Boolean           @default(true)
+  mustChangePassword  Boolean           @default(true)
   teams               TeamMember[]
   permissionOverrides UserPermission[]
-  createdAt           DateTime         @default(now())
+  createdAt           DateTime          @default(now())
+  invoicesCreated     ProviderInvoice[] @relation("InvoiceCreatedBy")
+  invoicesValidated   ProviderInvoice[] @relation("InvoiceValidatedBy")
 }
 
 model Team {
-  id      String           @id @default(cuid())
-  nome    String           @unique
-  tipo    BillingType
-  ativo   Boolean          @default(true)
-  members TeamMember[]
-  budgets ProviderBudget[]
+  id       String            @id @default(cuid())
+  nome     String            @unique
+  tipo     BillingType
+  ativo    Boolean           @default(true)
+  members  TeamMember[]
+  budgets  ProviderBudget[]
+  invoices ProviderInvoice[]
 }
 
 model TeamMember {
@@ -66,16 +83,17 @@ model UserPermission {
 // ---------- Página única de providers ----------
 
 model Provider {
-  id          String           @id @default(cuid())
-  nome        String           @unique
+  id          String            @id @default(cuid())
+  nome        String            @unique
   nif         String?
   contacto    String?
   email       String?
   tipos       BillingType[]
-  ativo       Boolean          @default(true)
+  ativo       Boolean           @default(true)
   budgets     ProviderBudget[]
   priceTables PriceTable[]
   targets     Target[]
+  invoices    ProviderInvoice[]
 }
 
 /// PO e orçamento mensal por provider/equipa/ano. teamId vazio = aplica-se a todas as equipas
@@ -114,8 +132,8 @@ model RentPrice {
   id           String     @id @default(cuid())
   priceTableId String
   potenciaKVA  Int?
-  subtipo      String?    /// vazio = aplica-se a todos
-  distancia    String?    /// vazio = aplica-se a todas
+  subtipo      String? /// vazio = aplica-se a todos
+  distancia    String? /// vazio = aplica-se a todas
   precoDiaCent BigInt?
   priceTable   PriceTable @relation(fields: [priceTableId], references: [id], onDelete: Cascade)
 
@@ -144,6 +162,42 @@ model Target {
   provider        Provider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@unique([ano, mes, providerId])
+}
+
+// ---------- PROVIDERS (modelo actual) ----------
+
+model ProviderInvoice {
+  id             String        @id @default(cuid())
+  teamId         String
+  providerId     String
+  ano            Int
+  mes            Int
+  /// PO preenchido automaticamente a partir do orçamento (equipa → por omissão) e guardado com a factura.
+  po             String?
+  tipo           String /// Manutenção | Material
+  numeroFactura  String?
+  dataFacturacao DateTime?     @db.Date
+  dataExecucao   DateTime?     @db.Date
+  qtdOTs         Int?
+  consumiveis    Int?
+  valorFTCent    BigInt
+  valorPagoCent  BigInt        @default(0)
+  status         InvoiceStatus @default(ABERTO)
+  observacao     String?
+  state          RecordState   @default(RASCUNHO)
+  createdById    String
+  validatedById  String?
+  validatedAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  team           Team          @relation(fields: [teamId], references: [id])
+  provider       Provider      @relation(fields: [providerId], references: [id])
+  createdBy      User          @relation("InvoiceCreatedBy", fields: [createdById], references: [id])
+  validatedBy    User?         @relation("InvoiceValidatedBy", fields: [validatedById], references: [id])
+
+  @@index([teamId, ano, mes])
+  @@index([providerId, ano])
+  @@index([createdById, state])
 }
 
 model AuditLog {

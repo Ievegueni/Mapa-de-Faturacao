@@ -49,15 +49,15 @@
 - Editar um preço depois funciona.
 
 ## Sprint 3 — Facturação de Providers (modelo actual)
-- [ ] `ProviderInvoice` com os mesmos campos do Excel actual.
-- [ ] Painel de inserção (PO preenchido automaticamente), lista com filtros, estados Rascunho → Submetido → Validado.
-- [ ] Resumo:
+- [x] `ProviderInvoice` com os mesmos campos do Excel actual.
+- [x] Painel de inserção (PO preenchido automaticamente), lista com filtros, estados Rascunho → Submetido → Validado.
+- [x] Resumo:
   - Tabela mês × provider.
   - Remanescente, dívida e % de execução.
   - Alerta quando um mês ultrapassa o orçamento mensal.
-- [ ] Script de importação do `Novo Mapa de Facturação.xlsx`.
+- [ ] Script de importação do `Novo Mapa de Facturação.xlsx`. *(pendente: aguarda o ficheiro)*
 
-**Aceitação:** os totais coincidem com a app HTML actual (Anglobal: Julho 660.000,00; Agosto 588.549,42).
+**Aceitação:** os totais coincidem com a app HTML actual (Anglobal: Julho 660.000,00; Agosto 588.549,42). *(cálculos verificados com estes valores inseridos à mão; falta confirmar com a importação do Excel)*
 
 ## Sprint 4 — Geradores: cálculos e dados mestre
 - [ ] `packages/shared/calc/generators.ts` com todas as fórmulas do §7 do `CLAUDE.md`, incluindo o tratamento de valores vazios e as flags `SEM_PRECO_*`.

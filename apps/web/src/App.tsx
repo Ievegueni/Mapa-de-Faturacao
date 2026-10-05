@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { HomeRedirect, RequireAuth, RequirePermission, RequireRole } from "./components/guards";
 import AppLayout from "./layouts/AppLayout";
+import BillingProvidersPage from "./pages/billing-providers/BillingProvidersPage";
 import ChangePasswordPage from "./pages/ChangePasswordPage";
 import DashboardPage from "./pages/DashboardPage";
 import DiscountRulesPage from "./pages/DiscountRulesPage";
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="utilizadores" element={<RequirePermission module="users" action="view"><UsersPage /></RequirePermission>} />
         <Route path="utilizadores/:id/permissoes" element={<RequirePermission module="users" action="view"><UserPermissionsPage /></RequirePermission>} />
         <Route path="equipas" element={<RequirePermission module="teams" action="view"><TeamsPage /></RequirePermission>} />
+        <Route path="facturacao/providers" element={<RequirePermission module="billing_providers" action="view"><BillingProvidersPage /></RequirePermission>} />
         <Route path="providers" element={<RequirePermission module="providers" action="view"><ProvidersPage /></RequirePermission>} />
         <Route path="faixas-desconto" element={<RequirePermission module="prices_targets" action="view"><DiscountRulesPage /></RequirePermission>} />
         <Route path="targets" element={<RequirePermission module="prices_targets" action="view"><TargetsPage /></RequirePermission>} />

@@ -111,3 +111,71 @@ export interface TargetRow {
   aluguerCent: string | null;
   combustivelCent: string | null;
 }
+
+export type InvoiceStatusT = "ABERTO" | "ANDAMENTO" | "PENDENTE" | "FECHADO";
+export type RecordStateT = "RASCUNHO" | "SUBMETIDO" | "VALIDADO" | "FECHADO";
+
+export interface InvoiceRow {
+  id: string;
+  teamId: string;
+  providerId: string;
+  ano: number;
+  mes: number;
+  po: string | null;
+  tipo: string;
+  numeroFactura: string | null;
+  dataFacturacao: string | null;
+  dataExecucao: string | null;
+  qtdOTs: number | null;
+  consumiveis: number | null;
+  valorFTCent: string;
+  valorPagoCent: string;
+  dividaCent: string;
+  status: InvoiceStatusT;
+  observacao: string | null;
+  state: RecordStateT;
+  createdById: string;
+  team: { id: string; nome: string };
+  provider: { id: string; nome: string };
+  createdBy: { id: string; nome: string };
+  validatedBy: { id: string; nome: string } | null;
+  validatedAt: string | null;
+}
+
+export interface InvoiceList {
+  items: InvoiceRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totals: { valorFTCent: string; valorPagoCent: string; dividaCent: string };
+}
+
+export interface BillingOptions {
+  teams: { id: string; nome: string }[];
+  providers: { id: string; nome: string }[];
+}
+
+export interface ProviderSummaryRow {
+  providerId: string;
+  nome: string;
+  facturadoMes: string[];
+  pagoMes: string[];
+  orcamentoMensal: string | null;
+  orcamentoAnual: string | null;
+  facturadoAno: string;
+  pagoAno: string;
+  divida: string;
+  remanescente: string | null;
+  execucaoPercent: number | null;
+  mesesAcimaOrcamento: number[];
+}
+
+export interface ProvidersSummary {
+  ano: number;
+  teamId: string | null;
+  providers: ProviderSummaryRow[];
+  totalMes: string[];
+  totalAno: string;
+  pagoAno: string;
+  dividaAno: string;
+}

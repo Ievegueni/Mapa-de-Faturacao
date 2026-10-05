@@ -5,6 +5,7 @@ import auditPlugin from "./plugins/audit";
 import authPlugin from "./plugins/auth";
 import prismaPlugin, { PrismaPluginOptions } from "./plugins/prisma";
 import authRoutes from "./modules/auth/routes";
+import billingProvidersRoutes from "./modules/billing-providers/routes";
 import healthRoutes from "./modules/health/routes";
 import permissionsRoutes from "./modules/permissions/routes";
 import pricesRoutes from "./modules/providers/prices.routes";
@@ -56,6 +57,7 @@ export function buildApp(opts: BuildAppOptions = {}) {
       api.register(providersRoutes);
       api.register(pricesRoutes);
       api.register(targetsRoutes);
+      api.register(billingProvidersRoutes);
     },
     { prefix: "/api" },
   );

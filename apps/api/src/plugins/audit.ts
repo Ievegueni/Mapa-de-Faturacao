@@ -6,8 +6,12 @@ export interface AuditEntry {
   entity: string;
   entityId: string;
   action: string;
-  diff?: Prisma.InputJsonValue;
+  /** Aceita BigInt (convertido para string). */
+  diff?: Prisma.InputJsonValue | Record<string, unknown>;
 }
+
+const jsonSafe = (value: unknown) =>
+  JSON.parse(JSON.stringify(value, (_k, v) => (typeof v === "bigint" ? v.toString() : v))) as Prisma.InputJsonValue;
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -18,7 +22,7 @@ declare module "fastify" {
 export default fp(
   async (app) => {
     app.decorate("audit", async (entry: AuditEntry) => {
-      await app.prisma.auditLog.create({ data: entry });
+      await app.prisma.auditLog.create({ data: { ...entry, diff: entry.diff === undefined ? undefined : jsonSafe(entry.diff) } });
     });
   },
   { name: "audit", dependencies: ["prisma"] },
