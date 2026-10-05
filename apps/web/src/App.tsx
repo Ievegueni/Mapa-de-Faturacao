@@ -8,6 +8,7 @@ import DiscountRulesPage from "./pages/DiscountRulesPage";
 import LoginPage from "./pages/LoginPage";
 import MyWorkPage from "./pages/MyWorkPage";
 import ProvidersPage from "./pages/ProvidersPage";
+import SitesPage from "./pages/generators/SitesPage";
 import TargetsPage from "./pages/TargetsPage";
 import TeamsPage from "./pages/TeamsPage";
 import UserPermissionsPage from "./pages/UserPermissionsPage";
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="utilizadores/:id/permissoes" element={<RequirePermission module="users" action="view"><UserPermissionsPage /></RequirePermission>} />
         <Route path="equipas" element={<RequirePermission module="teams" action="view"><TeamsPage /></RequirePermission>} />
         <Route path="facturacao/providers" element={<RequirePermission module="billing_providers" action="view"><BillingProvidersPage /></RequirePermission>} />
+        <Route path="geradores/sites" element={<RequirePermission module="billing_generators" action="view"><SitesPage /></RequirePermission>} />
         <Route path="providers" element={<RequirePermission module="providers" action="view"><ProvidersPage /></RequirePermission>} />
         <Route path="faixas-desconto" element={<RequirePermission module="prices_targets" action="view"><DiscountRulesPage /></RequirePermission>} />
         <Route path="targets" element={<RequirePermission module="prices_targets" action="view"><TargetsPage /></RequirePermission>} />

@@ -454,6 +454,16 @@ Implementar em `packages/shared/calc/generators.ts`, como funções puras com te
 - **Targets:** mostrar o target **do provider** e o target **global**, com desvio em valor e em %.
 - Divisão por zero → mostrar "—".
 
+**Detalhes de implementação (`calc/generators.ts`):**
+- Arredondamento ao cêntimo meio-para-cima; litros, horas e percentagens tratados em centésimas inteiras (sem vírgula flutuante).
+- As faixas aplicam-se às **horas de rede** (`24 − horasTrabalhadas`).
+- `DIAS_INVALIDOS`: dias vazios, ≤ 0, não inteiros ou > 31. Com dias ≤ 0 não há horas nem aluguer; com > 31 calcula na mesma.
+- `HORAS_NEGATIVAS`: sem desconto (e sem `HORAS_FORA_INTERVALO`). Horas N ou N−1 em falta: sem horas nem desconto, sem flag.
+- `SEM_PRECO_COMBUSTIVEL` / `SEM_PRECO_SERV_ABAST` só quando há litros; `SEM_PRECO_ALUGUER` só quando há dias.
+- Preço de aluguer: linhas com subtipo/distância vazios valem para todos; entre as compatíveis ganha a mais específica (subtipo pesa mais que distância). Sem compatível, usa a primeira linha da mesma potência.
+- Tabela de preços e faixas: a vigência mais recente com início ≤ 1.º dia do mês do mapa.
+- Dados mestre (sites e geradores): alterar exige `billing_generators.edit` + `validate`; eliminar também `delete`, e só sem medições.
+
 **Flags (avisos, não bloqueiam a gravação):**
 - `HORAS_NEGATIVAS`
 - `DIAS_INVALIDOS`

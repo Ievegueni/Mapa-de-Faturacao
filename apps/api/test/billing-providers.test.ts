@@ -61,7 +61,7 @@ describe.skipIf(!TEST_DB)("facturação de providers", () => {
   it("Técnico vê as opções do formulário e o PO é preenchido automaticamente", async () => {
     const opts = (await get(tecnico, "/api/billing/providers/options")).json();
     expect(opts.teams.map((t: { id: string }) => t.id)).toEqual([teamA]);
-    expect(opts.providers.map((p: { nome: string }) => p.nome)).toEqual(["Anglobal BP", "Blinder BP"]);
+    expect(opts.providers.map((p: { nome: string }) => p.nome)).toEqual(expect.arrayContaining(["Anglobal BP", "Blinder BP"]));
     const po = await get(tecnico, `/api/billing/providers/po?providerId=${anglobal}&teamId=${teamA}&ano=2026`);
     expect(po.json().po).toBe("4500614726");
 

@@ -29,6 +29,7 @@ const SECTIONS: MenuSection[] = [
     title: "Facturação",
     items: [
       { to: "/facturacao/providers", label: "Providers", icon: "M7 3h10l4 4v14H3V3h4Zm0 0v6h8V3M7 14h10M7 18h6", permission: ["billing_providers", "view"], billingType: "PROVIDERS" },
+      { to: "/geradores/sites", label: "Sites e geradores", icon: "M13 2 4 14h7l-1 8 9-12h-7l1-8Z", permission: ["billing_generators", "view"], billingType: "GERADORES" },
     ],
   },
   {

@@ -179,3 +179,54 @@ export interface ProvidersSummary {
   pagoAno: string;
   dividaAno: string;
 }
+
+export interface GeneratorOptions {
+  teams: { id: string; nome: string }[];
+  providers: { id: string; nome: string }[];
+  provincias: string[];
+  potencias: number[];
+}
+
+export interface SiteRow {
+  id: string;
+  teamId: string;
+  nome: string;
+  codigoPP: string | null;
+  codigoLocalizacao: string | null;
+  codigoCliente: string | null;
+  regiao: string;
+  provincia: string;
+  nivel: string | null;
+  tipo: string | null;
+  powerCube1000: boolean | null;
+  subtipo: string | null;
+  distanciaFacturacao: string | null;
+  tipoAcesso: string | null;
+  pavimentadoInterior: boolean | null;
+  ligadoRede: boolean | null;
+  team: { id: string; nome: string };
+  generators: { id: string; numeroSerie: string; potenciaKVA: number | null; dataRemocao: string | null; provider: { id: string; nome: string } }[];
+  _count: { measurements: number };
+}
+
+export interface GeneratorRow {
+  id: string;
+  siteId: string;
+  providerId: string;
+  numeroSerie: string;
+  numeroActivo: string | null;
+  potenciaKVA: number | null;
+  dataInstalacao: string | null;
+  dataRemocao: string | null;
+  dataEntrada: string | null;
+  provider: { id: string; nome: string };
+  site: { id: string; nome: string; codigoPP: string | null; teamId: string; provincia: string; regiao: string };
+  _count: { measurements: number };
+}
+
+export interface Paged<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}

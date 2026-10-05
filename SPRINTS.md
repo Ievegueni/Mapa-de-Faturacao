@@ -60,12 +60,12 @@
 **Aceitação:** os totais coincidem com a app HTML actual (Anglobal: Julho 660.000,00; Agosto 588.549,42). *(cálculos verificados com estes valores inseridos à mão; falta confirmar com a importação do Excel)*
 
 ## Sprint 4 — Geradores: cálculos e dados mestre
-- [ ] `packages/shared/calc/generators.ts` com todas as fórmulas do §7 do `CLAUDE.md`, incluindo o tratamento de valores vazios e as flags `SEM_PRECO_*`.
-- [ ] Testes Vitest com pelo menos 10 linhas reais de Agosto de 2026 e casos-limite: horas negativas, dias 0, limites das faixas, potência em texto, preços vazios.
-- [ ] Schema: `Site`, `Generator`, `GeneratorMonthlyMap`, `GeneratorMeasurement`, `MonthlyIndicators`.
-- [ ] CRUD de Sites e Geradores, com pesquisa e filtros.
+- [x] `packages/shared/calc/generators.ts` com todas as fórmulas do §7 do `CLAUDE.md`, incluindo o tratamento de valores vazios e as flags `SEM_PRECO_*`.
+- [~] Testes Vitest com pelo menos 10 linhas reais de Agosto de 2026 e casos-limite: horas negativas, dias 0, limites das faixas, potência em texto, preços vazios. *(casos-limite feitos; 10 linhas ilustrativas a substituir pelas reais quando houver o Excel)*
+- [x] Schema: `Site`, `Generator`, `GeneratorMonthlyMap`, `GeneratorMeasurement`, `MonthlyIndicators`.
+- [x] CRUD de Sites e Geradores, com pesquisa e filtros.
 
-**Aceitação:** os testes passam e os resultados batem com o Excel.
+**Aceitação:** os testes passam e os resultados batem com o Excel. *(testes passam; falta comparar com o Excel)*
 
 ## Sprint 5 — Geradores: importação e formulário
 - [ ] Importação em dois passos: preview (exceljs, mapeamento pelo cabeçalho, normalização) e depois confirmação (transacção em lotes de 200).

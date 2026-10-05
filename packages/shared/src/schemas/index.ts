@@ -72,3 +72,4 @@ export type TeamUpdateInput = z.infer<typeof teamUpdateSchema>;
 export type PermissionOverridesInput = z.infer<typeof permissionOverridesSchema>;
 export * from "./config";
 export * from "./invoices";
+export * from "./generators";

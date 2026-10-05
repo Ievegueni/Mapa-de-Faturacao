@@ -36,28 +36,32 @@ enum RecordState {
 }
 
 model User {
-  id                  String            @id @default(cuid())
+  id                  String                 @id @default(cuid())
   nome                String
-  email               String            @unique
+  email               String                 @unique
   passwordHash        String
   role                Role
-  ativo               Boolean           @default(true)
-  mustChangePassword  Boolean           @default(true)
+  ativo               Boolean                @default(true)
+  mustChangePassword  Boolean                @default(true)
   teams               TeamMember[]
   permissionOverrides UserPermission[]
-  createdAt           DateTime          @default(now())
-  invoicesCreated     ProviderInvoice[] @relation("InvoiceCreatedBy")
-  invoicesValidated   ProviderInvoice[] @relation("InvoiceValidatedBy")
+  createdAt           DateTime               @default(now())
+  invoicesCreated     ProviderInvoice[]      @relation("InvoiceCreatedBy")
+  invoicesValidated   ProviderInvoice[]      @relation("InvoiceValidatedBy")
+  measurements        GeneratorMeasurement[]
+  mapsClosed          GeneratorMonthlyMap[]
 }
 
 model Team {
-  id       String            @id @default(cuid())
-  nome     String            @unique
-  tipo     BillingType
-  ativo    Boolean           @default(true)
-  members  TeamMember[]
-  budgets  ProviderBudget[]
-  invoices ProviderInvoice[]
+  id            String                @id @default(cuid())
+  nome          String                @unique
+  tipo          BillingType
+  ativo         Boolean               @default(true)
+  members       TeamMember[]
+  budgets       ProviderBudget[]
+  invoices      ProviderInvoice[]
+  sites         Site[]
+  generatorMaps GeneratorMonthlyMap[]
 }
 
 model TeamMember {
@@ -83,17 +87,19 @@ model UserPermission {
 // ---------- Página única de providers ----------
 
 model Provider {
-  id          String            @id @default(cuid())
-  nome        String            @unique
-  nif         String?
-  contacto    String?
-  email       String?
-  tipos       BillingType[]
-  ativo       Boolean           @default(true)
-  budgets     ProviderBudget[]
-  priceTables PriceTable[]
-  targets     Target[]
-  invoices    ProviderInvoice[]
+  id            String                @id @default(cuid())
+  nome          String                @unique
+  nif           String?
+  contacto      String?
+  email         String?
+  tipos         BillingType[]
+  ativo         Boolean               @default(true)
+  budgets       ProviderBudget[]
+  priceTables   PriceTable[]
+  targets       Target[]
+  invoices      ProviderInvoice[]
+  generators    Generator[]
+  generatorMaps GeneratorMonthlyMap[]
 }
 
 /// PO e orçamento mensal por provider/equipa/ano. teamId vazio = aplica-se a todas as equipas
@@ -198,6 +204,130 @@ model ProviderInvoice {
   @@index([teamId, ano, mes])
   @@index([providerId, ano])
   @@index([createdById, state])
+}
+
+// ---------- GERADORES ----------
+
+model Site {
+  id                  String                 @id @default(cuid())
+  codigoPP            String?
+  codigoLocalizacao   String?
+  codigoCliente       String?
+  nome                String
+  regiao              String /// normalizado: Norte|Centro|Sul|Leste
+  provincia           String
+  nivel               String?
+  tipo                String?
+  powerCube1000       Boolean?
+  subtipo             String?
+  distanciaFacturacao String?
+  tipoAcesso          String?
+  pavimentadoInterior Boolean?
+  ligadoRede          Boolean?
+  teamId              String
+  team                Team                   @relation(fields: [teamId], references: [id])
+  generators          Generator[]
+  measurements        GeneratorMeasurement[]
+
+  @@unique([teamId, codigoPP])
+  @@index([teamId, regiao])
+  @@index([nome])
+}
+
+model Generator {
+  id             String                 @id @default(cuid())
+  siteId         String
+  providerId     String /// Proprietário
+  numeroSerie    String                 @unique
+  numeroActivo   String?
+  potenciaKVA    Int?
+  dataInstalacao DateTime?              @db.Date
+  dataRemocao    DateTime?              @db.Date
+  dataEntrada    DateTime?              @db.Date
+  site           Site                   @relation(fields: [siteId], references: [id])
+  provider       Provider               @relation(fields: [providerId], references: [id])
+  measurements   GeneratorMeasurement[]
+
+  @@index([siteId])
+  @@index([providerId])
+}
+
+/// Um mapa por equipa/provider/mês.
+model GeneratorMonthlyMap {
+  id           String                 @id @default(cuid())
+  teamId       String
+  providerId   String
+  ano          Int
+  mes          Int
+  state        RecordState            @default(RASCUNHO)
+  closedById   String?
+  closedAt     DateTime?
+  createdAt    DateTime               @default(now())
+  team         Team                   @relation(fields: [teamId], references: [id])
+  provider     Provider               @relation(fields: [providerId], references: [id])
+  closedBy     User?                  @relation(fields: [closedById], references: [id])
+  measurements GeneratorMeasurement[]
+  indicators   MonthlyIndicators?
+
+  @@unique([teamId, providerId, ano, mes])
+}
+
+/// Uma linha do Auto de Medição.
+model GeneratorMeasurement {
+  id                   String              @id @default(cuid())
+  mapId                String
+  siteId               String
+  generatorId          String
+  dias                 Int
+  horasN1              Decimal?            @db.Decimal(12, 2)
+  horasN               Decimal?            @db.Decimal(12, 2)
+  litros               Decimal?            @db.Decimal(12, 2)
+  // snapshot dos preços aplicados (vazio se ainda não definidos)
+  precoCombustivelCent BigInt?
+  precoServAbastCent   BigInt?
+  precoAluguerDiaCent  BigInt?
+  precoManutencaoCent  BigInt?
+  // valores manuais — ficam em branco até serem preenchidos
+  servExtrasCent       BigInt?
+  penExcessoHorasCent  BigInt?
+  penSLACent           BigInt?
+  penNivelCombustCent  BigInt?
+  penAvariaCent        BigInt?
+  // calculados (persistidos para relatórios rápidos)
+  horasTrabalhadas     Int?
+  horasRede            Int?
+  descontoPercent      Decimal?            @db.Decimal(5, 2)
+  combustivelCent      BigInt
+  servAbastCent        BigInt
+  abastecimentoCent    BigInt
+  aluguerCent          BigInt
+  descontoRedeCent     BigInt
+  totalCent            BigInt
+  flags                String[]
+  state                RecordState         @default(RASCUNHO)
+  createdById          String
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  map                  GeneratorMonthlyMap @relation(fields: [mapId], references: [id], onDelete: Cascade)
+  site                 Site                @relation(fields: [siteId], references: [id])
+  generator            Generator           @relation(fields: [generatorId], references: [id])
+  createdBy            User                @relation(fields: [createdById], references: [id])
+
+  @@unique([mapId, generatorId])
+  @@index([siteId])
+  @@index([generatorId])
+}
+
+/// Linhas manuais do Mapa Resumo de Validações.
+model MonthlyIndicators {
+  id                          String              @id @default(cuid())
+  mapId                       String              @unique
+  sitesRedePublica            Int?
+  sitesRedeConfiguradosNetEco Int?
+  sitesRedeSemGarantia        Int?
+  poupancaCent                BigInt?
+  transporteExtraCent         BigInt?
+  map                         GeneratorMonthlyMap @relation(fields: [mapId], references: [id], onDelete: Cascade)
 }
 
 model AuditLog {
