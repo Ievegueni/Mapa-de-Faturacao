@@ -1,24 +1,29 @@
+import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
+import { Spinner } from "./components/ui";
 import { HomeRedirect, RequireAuth, RequirePermission, RequireRole } from "./components/guards";
 import AppLayout from "./layouts/AppLayout";
-import BillingProvidersPage from "./pages/billing-providers/BillingProvidersPage";
 import ChangePasswordPage from "./pages/ChangePasswordPage";
-import DashboardPage from "./pages/DashboardPage";
-import DiscountRulesPage from "./pages/DiscountRulesPage";
 import LoginPage from "./pages/LoginPage";
 import MyWorkPage from "./pages/MyWorkPage";
-import ProvidersPage from "./pages/ProvidersPage";
-import SitesPage from "./pages/generators/SitesPage";
-import MapPage from "./pages/generators/MapPage";
-import MapsPage from "./pages/generators/MapsPage";
-import ValidationsPage from "./pages/generators/ValidationsPage";
-import TargetsPage from "./pages/TargetsPage";
-import TeamsPage from "./pages/TeamsPage";
-import UserPermissionsPage from "./pages/UserPermissionsPage";
-import UsersPage from "./pages/UsersPage";
+
+/** Páginas carregadas a pedido: o bundle inicial fica leve (o Recharts só vem com o dashboard). */
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const MapPage = lazy(() => import("./pages/generators/MapPage"));
+const MapsPage = lazy(() => import("./pages/generators/MapsPage"));
+const ValidationsPage = lazy(() => import("./pages/generators/ValidationsPage"));
+const SitesPage = lazy(() => import("./pages/generators/SitesPage"));
+const BillingProvidersPage = lazy(() => import("./pages/billing-providers/BillingProvidersPage"));
+const ProvidersPage = lazy(() => import("./pages/ProvidersPage"));
+const TargetsPage = lazy(() => import("./pages/TargetsPage"));
+const DiscountRulesPage = lazy(() => import("./pages/DiscountRulesPage"));
+const UsersPage = lazy(() => import("./pages/UsersPage"));
+const TeamsPage = lazy(() => import("./pages/TeamsPage"));
+const UserPermissionsPage = lazy(() => import("./pages/UserPermissionsPage"));
 
 export default function App() {
   return (
+    <Suspense fallback={<Spinner />}>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/trocar-password" element={<RequireAuth><ChangePasswordPage /></RequireAuth>} />
@@ -40,5 +45,6 @@ export default function App() {
         <Route path="*" element={<HomeRedirect />} />
       </Route>
     </Routes>
+    </Suspense>
   );
 }
