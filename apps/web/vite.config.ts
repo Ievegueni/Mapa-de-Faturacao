@@ -10,6 +10,10 @@ export default defineConfig({
       "@cf/shared": fileURLToPath(new URL("../../packages/shared/src/index.ts", import.meta.url)),
     },
   },
+  build: {
+    // O exceljs (~940 kB) só é descarregado ao exportar para Excel (import dinâmico); não entra no bundle inicial.
+    chunkSizeWarningLimit: 1000,
+  },
   server: {
     port: 5173,
     proxy: {

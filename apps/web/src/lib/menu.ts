@@ -32,6 +32,7 @@ const SECTIONS: MenuSection[] = [
       { to: "/geradores/mapas", label: "Mapas de geradores", icon: "M3 5h18v14H3V5Zm0 5h18M8 5v14", permission: ["billing_generators", "view"], billingType: "GERADORES" },
       { to: "/geradores/validacoes", label: "Resumo de validações", icon: "M4 19V5m0 14h16M8 15l3-4 3 2 4-6", permission: ["billing_generators", "view"], billingType: "GERADORES" },
       { to: "/geradores/sites", label: "Sites e geradores", icon: "M13 2 4 14h7l-1 8 9-12h-7l1-8Z", permission: ["billing_generators", "view"], billingType: "GERADORES" },
+      { to: "/relatorios", label: "Relatórios", icon: "M6 2h9l5 5v15H6V2Zm9 0v5h5M9 17v-4m3 4v-7m3 7v-2", permission: ["reports", "view"] },
     ],
   },
   {

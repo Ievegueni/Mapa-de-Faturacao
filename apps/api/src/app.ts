@@ -14,6 +14,7 @@ import measurementsRoutes from "./modules/generators/measurements.routes";
 import summaryRoutes from "./modules/generators/summary.routes";
 import healthRoutes from "./modules/health/routes";
 import permissionsRoutes from "./modules/permissions/routes";
+import reportsRoutes from "./modules/reports/routes";
 import pricesRoutes from "./modules/providers/prices.routes";
 import providersRoutes from "./modules/providers/providers.routes";
 import targetsRoutes from "./modules/providers/targets.routes";
@@ -70,6 +71,7 @@ export function buildApp(opts: BuildAppOptions = {}) {
       api.register(importRoutes);
       api.register(summaryRoutes);
       api.register(dashboardRoutes);
+      api.register(reportsRoutes);
     },
     { prefix: "/api" },
   );

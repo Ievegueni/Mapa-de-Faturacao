@@ -576,6 +576,15 @@ Implementar em `packages/shared/calc/generators.ts`, como funções puras com te
    - **Excel**: `exceljs` (build browser). Uma folha por secção, números formatados `#,##0.00`, totais com `SUM`, gráficos como imagem PNG. Gráficos nativos do Excel não são suportados.
 6. A API só fornece os dados: `GET /reports/data?tipo&modelo&filtros`. A exportação fica registada no `AuditLog` (`POST /reports/log`).
 
+**Detalhes de implementação:**
+- Catálogo e formato comum em `packages/shared/src/reports.ts` (`REPORT_MODELS`, secções com colunas tipadas `texto|kz|int|decimal|pct|data`, gráficos `barras|barras_empilhadas|linhas`). A pré-visualização, o PDF e o Excel usam o mesmo `ReportData`.
+- `GET /reports/data` exige `reports.view` + `billing_{tipo}.view`; `POST /reports/log` exige `reports.export` + `billing_{tipo}.export` (acção `export_pdf` / `export_xlsx`). O browser regista antes de gerar o ficheiro.
+- O Resumo do mês e o Mapa Resumo de Validações reutilizam `summary.service.ts` (os mesmos números das páginas). Sem provider/equipa, o orçamento soma por equipa (§8).
+- Pré-visualização mostra 50 linhas por secção ("Mostrar todas"); a exportação leva todas.
+- Gráficos marcados com `data-chart-id`/`data-chart-title` são capturados por `export/chartToPng.ts` (PNG ×2). Gráfico só com zeros mostra "Sem valores" e não é exportado.
+- PDF: `compress: true` (≈60 kB; Auto de Medição completo ≈550 kB), gráficos à escala 0,22 mm/px, fontes base Latin-1 (`≤ ≥ → −` substituídos).
+- jsPDF e exceljs são importados a pedido (só ao exportar); o exceljs (~940 kB) justifica `chunkSizeWarningLimit: 1000`.
+
 ## 12. API (principais endpoints)
 
 ```

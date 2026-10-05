@@ -104,13 +104,15 @@
 **Aceitação:** o dashboard carrega em menos de 2 s com 12 meses de dados. *(API: 37 ms com 12 meses × 1.200 medições; no browser, troca de separador em ~0,2 s)*
 
 ## Sprint 8 — Relatórios (no browser)
-- [ ] Página de relatórios: tipo de facturação → modelo → filtros → pré-visualização.
-- [ ] `GET /reports/data` para cada modelo.
-- [ ] `export/chartToPng.ts`: converte o SVG do Recharts em PNG.
-- [ ] `export/pdf.ts` (jsPDF + autotable) e `export/xlsx.ts` (exceljs no browser), ambos com gráficos.
-- [ ] Registo de cada exportação na auditoria.
+- [x] Página de relatórios: tipo de facturação → modelo → filtros → pré-visualização.
+- [x] `GET /reports/data` para cada modelo.
+- [x] `export/chartToPng.ts`: converte o SVG do Recharts em PNG.
+- [x] `export/pdf.ts` (jsPDF + autotable) e `export/xlsx.ts` (exceljs no browser), ambos com gráficos.
+- [x] Registo de cada exportação na auditoria.
 
 **Aceitação:** cada modelo gera PDF e Excel que abrem sem erro, com gráficos visíveis.
+
+**Resultado:** 8 modelos (3 Providers, 5 Geradores) testados no browser com os dados reais de Agosto de 2026: todos descarregam PDF (`%PDF`) e Excel (`PK`) válidos, com gráficos; pré-visualização < 1 s. PDF ≈ 40–65 kB (Auto de Medição completo, 58 páginas, ≈ 550 kB). Excel com valores numéricos `#,##0.00`, totais `SUM` e folha "Gráficos". Cada exportação fica no `AuditLog`. Testes: shared 67, API 61.
 
 ## Sprint 9 — Auditoria, segurança e deploy
 - [ ] Página de auditoria (Gestor).

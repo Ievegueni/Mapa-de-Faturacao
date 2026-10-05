@@ -19,6 +19,7 @@ const TargetsPage = lazy(() => import("./pages/TargetsPage"));
 const DiscountRulesPage = lazy(() => import("./pages/DiscountRulesPage"));
 const UsersPage = lazy(() => import("./pages/UsersPage"));
 const TeamsPage = lazy(() => import("./pages/TeamsPage"));
+const ReportsPage = lazy(() => import("./pages/reports/ReportsPage"));
 const UserPermissionsPage = lazy(() => import("./pages/UserPermissionsPage"));
 
 export default function App() {
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="geradores/mapas/:id" element={<RequirePermission module="billing_generators" action="view"><MapPage /></RequirePermission>} />
         <Route path="geradores/validacoes" element={<RequirePermission module="billing_generators" action="view"><ValidationsPage /></RequirePermission>} />
         <Route path="geradores/sites" element={<RequirePermission module="billing_generators" action="view"><SitesPage /></RequirePermission>} />
+        <Route path="relatorios" element={<RequirePermission module="reports" action="view"><ReportsPage /></RequirePermission>} />
         <Route path="providers" element={<RequirePermission module="providers" action="view"><ProvidersPage /></RequirePermission>} />
         <Route path="faixas-desconto" element={<RequirePermission module="prices_targets" action="view"><DiscountRulesPage /></RequirePermission>} />
         <Route path="targets" element={<RequirePermission module="prices_targets" action="view"><TargetsPage /></RequirePermission>} />
