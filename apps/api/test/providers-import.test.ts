@@ -27,7 +27,7 @@ describe.skipIf(!TEST_DB || !existsSync(FILE))("importação do Novo Mapa de Fac
     await app.ready();
     teamId = (await prisma.team.create({ data: { nome: "Providers Migração", tipo: "PROVIDERS" } })).id;
     for (const nome of ["Anglobal", "Blinder", "Comatel"]) {
-      const p = await prisma.provider.upsert({ where: { nome }, create: { nome, tipos: ["PROVIDERS", "GERADORES"] }, update: {} });
+      const p = await prisma.provider.upsert({ where: { nome_tipo: { nome, tipo: "PROVIDERS" } }, create: { nome, tipo: "PROVIDERS" }, update: {} });
       const exists = await prisma.providerBudget.findFirst({ where: { providerId: p.id, teamId: null, ano: 2026 } });
       if (!exists) await prisma.providerBudget.create({ data: { providerId: p.id, teamId: null, ano: 2026, orcamentoMensalCent: BigInt(295000000) } });
     }

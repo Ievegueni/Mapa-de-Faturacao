@@ -30,7 +30,7 @@ export default function ProvidersDashboard({ data, simplified }: { data: P; simp
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-        <ChartCard title="Consumo do orçamento por provider" subtitle="Facturado no ano face ao orçamento anual (mensal × 12).">
+        <ChartCard title="Consumo do orçamento por parceiro" subtitle="Facturado no ano face ao orçamento anual (mensal × 12).">
           <ul className="space-y-4">
             {data.porProvider.map((p) => {
               const v = p.execucaoPercent ?? 0;
@@ -59,7 +59,7 @@ export default function ProvidersDashboard({ data, simplified }: { data: P; simp
         {!simplified && (
           <ChartCard
             title="Facturado por mês"
-            subtitle="Valor das facturas por provider (Kz)."
+            subtitle="Valor das facturas por parceiro (Kz)."
             legend={withValues.length > 1 ? <Legend items={withValues.map((p) => ({ label: p.nome, color: colorOf.get(p.providerId)! }))} /> : undefined}
           >
             <div className="h-64">
@@ -101,7 +101,7 @@ export default function ProvidersDashboard({ data, simplified }: { data: P; simp
             <table className="min-w-full divide-y divide-ink-100">
               <thead className="bg-ink-50/60">
                 <tr>
-                  <th className={th}>Provider</th>
+                  <th className={th}>Parceiro</th>
                   <th className={th}>Período</th>
                   <th className={th}>Factura</th>
                   <th className={`${th} text-right`}>Valor FT</th>

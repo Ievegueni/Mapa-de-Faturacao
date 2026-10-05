@@ -12,10 +12,13 @@ export async function seedConfig(prisma: PrismaClient) {
     { nome: "Comatel", po: null },
   ];
 
+  // Listas separadas por módulo: os mesmos parceiros na Rede Residencial (PO e orçamento)
+  // e em Combustível e Geradores (preços), como registos independentes.
   for (const p of providers) {
+    await prisma.provider.upsert({ where: { nome_tipo: { nome: p.nome, tipo: "GERADORES" } }, create: { nome: p.nome, tipo: "GERADORES" }, update: {} });
     const provider = await prisma.provider.upsert({
-      where: { nome: p.nome },
-      create: { nome: p.nome, tipos: ["PROVIDERS", "GERADORES"] },
+      where: { nome_tipo: { nome: p.nome, tipo: "PROVIDERS" } },
+      create: { nome: p.nome, tipo: "PROVIDERS" },
       update: {},
     });
     // Orçamento por omissão (todas as equipas) para o ano.
@@ -37,7 +40,7 @@ export async function seedConfig(prisma: PrismaClient) {
   }
 
   // Anglobal: combustível 420,00, serviço de abastecimento 48,00, IVA 14%. Aluguer e manutenção em branco.
-  const anglobal = await prisma.provider.findUniqueOrThrow({ where: { nome: "Anglobal" } });
+  const anglobal = await prisma.provider.findUniqueOrThrow({ where: { nome_tipo: { nome: "Anglobal", tipo: "GERADORES" } } });
   if ((await prisma.priceTable.count({ where: { providerId: anglobal.id } })) === 0) {
     await prisma.priceTable.create({
       data: {

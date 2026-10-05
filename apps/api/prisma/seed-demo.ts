@@ -95,13 +95,22 @@ async function main() {
     await db.userPermission.create({ data: { userId: elsaTec.id, module: "billing_providers", action: "export", allowed: true } });
 
     // ---------- Providers, orçamentos e preços ----------
-    const providers = await db.provider.findMany({ where: { nome: { in: ["Anglobal", "Blinder", "Comatel"] } } });
-    const P = Object.fromEntries(providers.map((p) => [p.nome, p])) as Record<"Anglobal" | "Blinder" | "Comatel", (typeof providers)[number]>;
-    await db.provider.update({ where: { id: P.Anglobal.id }, data: { nif: "5000000001", contacto: "+244 900 000 001", email: "facturacao@anglobal.demo" } });
-    await db.provider.update({ where: { id: P.Blinder.id }, data: { nif: "5000000002", contacto: "+244 900 000 002", email: "facturacao@blinder.demo" } });
-    await db.provider.update({ where: { id: P.Comatel.id }, data: { nif: "5000000003", contacto: "+244 900 000 003", email: "facturacao@comatel.demo" } });
+    // Parceiros em listas separadas por módulo (criados pelo seedConfig)
+    const all = await db.provider.findMany({ where: { nome: { in: ["Anglobal", "Blinder", "Comatel"] } } });
+    type Nome = "Anglobal" | "Blinder" | "Comatel";
+    const byTipo = (tipo: "PROVIDERS" | "GERADORES") => Object.fromEntries(all.filter((p) => p.tipo === tipo).map((p) => [p.nome, p])) as Record<Nome, (typeof all)[number]>;
+    const R = byTipo("PROVIDERS"); // Rede Residencial: PO, orçamentos e facturas
+    const P = byTipo("GERADORES"); // Combustível e Geradores: preços, geradores, mapas e targets
+    const providers = Object.values(P);
+    const residenciais = Object.values(R);
+    const contactos: Record<Nome, { nif: string; contacto: string; email: string }> = {
+      Anglobal: { nif: "5000000001", contacto: "+244 900 000 001", email: "facturacao@anglobal.demo" },
+      Blinder: { nif: "5000000002", contacto: "+244 900 000 002", email: "facturacao@blinder.demo" },
+      Comatel: { nif: "5000000003", contacto: "+244 900 000 003", email: "facturacao@comatel.demo" },
+    };
+    for (const p of all) await db.provider.update({ where: { id: p.id }, data: contactos[p.nome as Nome] });
     // Orçamento específico de equipa (sobrepõe-se ao por omissão): Blinder na equipa Providers Sul.
-    await db.providerBudget.create({ data: { providerId: P.Blinder.id, teamId: tProvSul.id, ano, po: "4500700001", orcamentoMensalCent: kz(1500000) } });
+    await db.providerBudget.create({ data: { providerId: R.Blinder.id, teamId: tProvSul.id, ano, po: "4500700001", orcamentoMensalCent: kz(1500000) } });
 
     const inicio = new Date(Date.UTC(ano, 0, 1));
     const rent = (v15: number, v20: number, v30: number, v45: number) => ({
@@ -261,7 +270,7 @@ async function main() {
       }
     }
 
-    // ---------- Targets (por provider e global), perto dos valores reais (±10%) ----------
+    // ---------- Targets (por parceiro de Geradores e global), perto dos valores reais (±10%) ----------
     for (let mes = 1; mes <= 12; mes++) {
       let gAlug = BigInt(0);
       let gAbast = BigInt(0);
@@ -284,8 +293,8 @@ async function main() {
       budgets.find((b) => b.providerId === providerId && b.teamId === teamId)?.po ?? budgets.find((b) => b.providerId === providerId && b.teamId === null)?.po ?? null;
     const invoices: Prisma.ProviderInvoiceCreateManyInput[] = [];
     for (const [teamObj, criador] of [[tProvLuanda, elsaTec], [tProvSul, anaSup]] as const) {
-      for (const p of providers) {
-        const orcMensal = teamObj.id === tProvSul.id && p.id === P.Blinder.id ? 1500000 : 2950000;
+      for (const p of residenciais) {
+        const orcMensal = teamObj.id === tProvSul.id && p.id === R.Blinder.id ? 1500000 : 2950000;
         for (let mes = 1; mes <= ultimoMes; mes++) {
           const tipos = mes % 3 === 0 ? ["Manutenção", "Material"] : ["Manutenção"];
           for (const tipo of tipos) {

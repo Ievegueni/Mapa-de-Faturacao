@@ -28,11 +28,11 @@ export interface ReportModelDef {
 
 export const REPORT_MODELS: ReportModelDef[] = [
   { tipo: "PROVIDERS", modelo: "resumo_anual", nome: "Resumo anual", descricao: "Facturado por mês e parceiro, orçamento, dívida, remanescente e % de execução.", filtros: ["ano", "equipa"], obrigatorios: ["ano"], orientacao: "landscape" },
-  { tipo: "PROVIDERS", modelo: "por_provider", nome: "Por provider", descricao: "Facturas do ano de um parceiro, com pagamentos e dívida.", filtros: ["ano", "equipa", "provider"], obrigatorios: ["ano", "provider"], orientacao: "landscape" },
+  { tipo: "PROVIDERS", modelo: "por_provider", nome: "Por parceiro", descricao: "Facturas do ano de um parceiro, com pagamentos e dívida.", filtros: ["ano", "equipa", "provider"], obrigatorios: ["ano", "provider"], orientacao: "landscape" },
   { tipo: "PROVIDERS", modelo: "pagamentos_divida", nome: "Pagamentos / Dívida", descricao: "Facturas com dívida e resumo de pagamentos por parceiro.", filtros: ["ano", "equipa", "provider"], obrigatorios: ["ano"], orientacao: "landscape" },
   { tipo: "GERADORES", modelo: "auto_medicao", nome: "Auto de Medição mensal", descricao: "Todas as medições do mês, com cálculos e avisos.", filtros: ["ano", "mes", "equipa", "provider", "regiao", "provincia"], obrigatorios: ["ano", "mes"], orientacao: "landscape" },
   { tipo: "GERADORES", modelo: "resumo_mes", nome: "Resumo do mês (com IVA)", descricao: "Aluguer, combustível e serviço por zona: facturado, validado, diferença, IVA e total + IVA.", filtros: ["ano", "mes", "equipa", "provider"], obrigatorios: ["ano", "mes", "provider"], orientacao: "portrait" },
-  { tipo: "GERADORES", modelo: "validacoes_anual", nome: "Mapa Resumo de Validações", descricao: "Vista anual Jan–Dez do provider: penalizações, parque, valores, variações e targets.", filtros: ["ano", "equipa", "provider"], obrigatorios: ["ano", "provider"], orientacao: "landscape" },
+  { tipo: "GERADORES", modelo: "validacoes_anual", nome: "Mapa Resumo de Validações", descricao: "Vista anual Jan–Dez do parceiro: penalizações, parque, valores, variações e targets.", filtros: ["ano", "equipa", "provider"], obrigatorios: ["ano", "provider"], orientacao: "landscape" },
   { tipo: "GERADORES", modelo: "penalizacoes", nome: "Penalizações", descricao: "Medições com penalizações, por tipo.", filtros: ["ano", "mes", "equipa", "provider", "regiao", "provincia"], obrigatorios: ["ano"], orientacao: "landscape" },
   { tipo: "GERADORES", modelo: "consumo_regiao", nome: "Consumo por região", descricao: "Litros e valores de abastecimento por região e província.", filtros: ["ano", "mes", "equipa", "provider", "regiao"], obrigatorios: ["ano"], orientacao: "portrait" },
 ];

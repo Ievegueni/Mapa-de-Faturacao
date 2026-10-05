@@ -114,6 +114,12 @@
 
 **Resultado:** 8 modelos (3 Providers, 5 Geradores) testados no browser com os dados reais de Agosto de 2026: todos descarregam PDF (`%PDF`) e Excel (`PK`) válidos, com gráficos; pré-visualização < 1 s. PDF ≈ 40–65 kB (Auto de Medição completo, 58 páginas, ≈ 550 kB). Excel com valores numéricos `#,##0.00`, totais `SUM` e folha "Gráficos". Cada exportação fica no `AuditLog`. Testes: shared 67, API 61.
 
+## Ajuste — Módulos separados (após o Sprint 8)
+- [x] Dois módulos independentes: **Rede Residencial** (antigo "Providers") e **Combustível e Geradores**, com menu, rotas, dashboard, relatórios e configuração próprios (CLAUDE.md §5.5).
+- [x] Parceiros em listas separadas por módulo (`Provider.tipo`); migração divide os parceiros partilhados e move geradores, mapas, preços e targets para o registo de Geradores.
+- [x] API: parceiros, preços, faixas, targets e relatórios filtrados/validados por módulo.
+- [x] Selector de módulo na barra lateral (Gestor ou quem tem equipas dos dois tipos); "O meu trabalho" por módulo.
+
 ## Sprint 9 — Auditoria, segurança e deploy
 - [ ] Página de auditoria (Gestor).
 - [ ] Rate-limit, CORS, cookies seguros e validação dos uploads.

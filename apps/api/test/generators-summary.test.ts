@@ -17,8 +17,8 @@ describe.skipIf(!TEST_DB)("resumo do mês e Mapa Resumo de Validações", () => 
   beforeAll(async () => {
     await app.ready();
     team = (await prisma.team.create({ data: { nome: "Geradores Resumo", tipo: "GERADORES" } })).id;
-    provider = (await prisma.provider.create({ data: { nome: "Prov Resumo", tipos: ["GERADORES"] } })).id;
-    other = (await prisma.provider.create({ data: { nome: "Outro Resumo", tipos: ["GERADORES"] } })).id;
+    provider = (await prisma.provider.create({ data: { nome: "Prov Resumo", tipo: "GERADORES" } })).id;
+    other = (await prisma.provider.create({ data: { nome: "Outro Resumo", tipo: "GERADORES" } })).id;
     for (const p of [provider, other]) {
       const pt = await prisma.priceTable.create({ data: { providerId: p, validFrom: new Date("2026-01-01"), precoCombustivelCent: BigInt(42000), precoServAbastCent: BigInt(4800), precoManutencaoCent: BigInt(10000), ivaPercent: "14" } });
       await prisma.rentPrice.create({ data: { priceTableId: pt.id, potenciaKVA: 20, precoDiaCent: BigInt(1000000) } });

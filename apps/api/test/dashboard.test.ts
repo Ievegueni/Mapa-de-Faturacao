@@ -7,7 +7,8 @@ const N = 1200; // ~ parque real (1.161 geradores)
 describe.skipIf(!TEST_DB)("dashboard", () => {
   const { app, prisma } = createTestApp();
   let team: string;
-  let provider: string;
+  let provider: string; // Combustível e Geradores
+  let resProvider: string; // Rede Residencial
   let gestor: string;
   let supervisor: string;
   let tecnico: string;
@@ -18,9 +19,10 @@ describe.skipIf(!TEST_DB)("dashboard", () => {
     await app.ready();
     team = (await prisma.team.create({ data: { nome: "Dash Geradores", tipo: "GERADORES" } })).id;
     const provTeam = (await prisma.team.create({ data: { nome: "Dash Providers", tipo: "PROVIDERS" } })).id;
-    provider = (await prisma.provider.create({ data: { nome: "Dash Prov", tipos: ["GERADORES", "PROVIDERS"] } })).id;
+    provider = (await prisma.provider.create({ data: { nome: "Dash Prov", tipo: "GERADORES" } })).id;
+    resProvider = (await prisma.provider.create({ data: { nome: "Dash Prov", tipo: "PROVIDERS" } })).id;
     await prisma.priceTable.create({ data: { providerId: provider, validFrom: new Date(`${ANO}-01-01`), precoCombustivelCent: BigInt(42000), precoServAbastCent: BigInt(4800), ivaPercent: "14" } });
-    await prisma.providerBudget.create({ data: { providerId: provider, teamId: null, ano: ANO, po: "PO-DASH", orcamentoMensalCent: BigInt(295000000) } });
+    await prisma.providerBudget.create({ data: { providerId: resProvider, teamId: null, ano: ANO, po: "PO-DASH", orcamentoMensalCent: BigInt(295000000) } });
     await prisma.target.create({ data: { ano: ANO, mes: 12, providerId: provider, aluguerCent: BigInt(1000000000), combustivelCent: BigInt(500000000) } });
 
     // 1.200 sites/geradores e 12 mapas mensais com 1.200 medições cada (14.400 linhas)
@@ -46,7 +48,7 @@ describe.skipIf(!TEST_DB)("dashboard", () => {
       });
     }
     await prisma.providerInvoice.create({
-      data: { teamId: provTeam, providerId: provider, ano: ANO, mes: 3, tipo: "Manutenção", valorFTCent: BigInt(66000000), valorPagoCent: BigInt(10000000), createdById: creator.id, state: "SUBMETIDO" },
+      data: { teamId: provTeam, providerId: resProvider, ano: ANO, mes: 3, tipo: "Manutenção", valorFTCent: BigInt(66000000), valorPagoCent: BigInt(10000000), createdById: creator.id, state: "SUBMETIDO" },
     });
     await createUser(prisma, { email: "s@dash.ao", role: "SUPERVISOR", teamIds: [team] });
     await createUser(prisma, { email: "t@dash.ao", role: "TECNICO", teamIds: [team] });
@@ -89,7 +91,7 @@ describe.skipIf(!TEST_DB)("dashboard", () => {
   });
 
   it("providers: KPIs, consumo do orçamento, gráfico mensal e facturas pendentes", async () => {
-    const res = await get(gestor, `tipo=PROVIDERS&ano=${ANO}&providerId=${provider}`);
+    const res = await get(gestor, `tipo=PROVIDERS&ano=${ANO}&providerId=${resProvider}`);
     expect(res.statusCode).toBe(200);
     const p = res.json().providers;
     expect(p.kpis.facturado).toBe("66000000");

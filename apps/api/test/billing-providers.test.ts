@@ -35,8 +35,8 @@ describe.skipIf(!TEST_DB)("facturação de providers", () => {
     await app.ready();
     teamA = (await prisma.team.create({ data: { nome: "Prov A", tipo: "PROVIDERS" } })).id;
     teamB = (await prisma.team.create({ data: { nome: "Prov B", tipo: "PROVIDERS" } })).id;
-    anglobal = (await prisma.provider.create({ data: { nome: "Anglobal BP", tipos: ["PROVIDERS", "GERADORES"] } })).id;
-    blinder = (await prisma.provider.create({ data: { nome: "Blinder BP", tipos: ["PROVIDERS"] } })).id;
+    anglobal = (await prisma.provider.create({ data: { nome: "Anglobal BP", tipo: "PROVIDERS" } })).id;
+    blinder = (await prisma.provider.create({ data: { nome: "Blinder BP", tipo: "PROVIDERS" } })).id;
     await prisma.providerBudget.createMany({
       data: [
         { providerId: anglobal, teamId: null, ano: 2026, po: "4500614726", orcamentoMensalCent: BigInt(295000000) },

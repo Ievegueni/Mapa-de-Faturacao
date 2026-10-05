@@ -1,7 +1,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BILLING_TYPE_LABELS, BILLING_TYPES, BillingType, formatKz, providerCreateSchema } from "@cf/shared";
+import { BillingType, formatKz, providerCreateSchema, providerUpdateSchema } from "@cf/shared";
 import { MoneyInput } from "../components/inputs";
 import { Tabs } from "../components/Tabs";
 import { Alert, Badge, Button, Card, EmptyRow, Field, Input, Modal, PageHeader, Select, Spinner, errorMessage, td, th } from "../components/ui";
@@ -14,30 +14,39 @@ import PricesTab from "./PricesTab";
 
 type Tab = "providers" | "precos";
 
-export default function ProvidersPage() {
+/**
+ * Parceiros de um módulo (listas separadas):
+ * - Rede Residencial: dados do parceiro, PO e orçamento por equipa/ano.
+ * - Combustível e Geradores: dados do parceiro e tabelas de preços.
+ */
+export default function ProvidersPage({ tipo }: { tipo: BillingType }) {
   const [params, setParams] = useSearchParams();
-  const canPrices = usePermission("prices_targets", "view");
+  const canPrices = usePermission("prices_targets", "view") && tipo === "GERADORES";
   const tab: Tab = params.get("tab") === "precos" && canPrices ? "precos" : "providers";
 
   return (
     <>
-      <PageHeader title="Providers" subtitle="Parceiros, tipos de facturação, PO, orçamentos e preços." />
+      <PageHeader
+        title={tipo === "PROVIDERS" ? "Parceiros e orçamentos" : "Parceiros e preços"}
+        subtitle={tipo === "PROVIDERS" ? "Parceiros da Rede Residencial, PO e orçamento mensal por equipa." : "Parceiros de Combustível e Geradores e tabelas de preços."}
+      />
       {canPrices && (
         <Tabs<Tab>
           value={tab}
           onChange={(v) => setParams(v === "precos" ? { tab: "precos" } : {})}
           items={[
-            { value: "providers", label: "Providers" },
+            { value: "providers", label: "Parceiros" },
             { value: "precos", label: "Preços" },
           ]}
         />
       )}
-      {tab === "providers" ? <ProvidersTab /> : <PricesTab />}
+      {tab === "providers" ? <ProvidersTab tipo={tipo} /> : <PricesTab />}
     </>
   );
 }
 
-function ProvidersTab() {
+function ProvidersTab({ tipo }: { tipo: BillingType }) {
+  const residencial = tipo === "PROVIDERS";
   const qc = useQueryClient();
   const [estado, setEstado] = useState("true");
   const [editing, setEditing] = useState<ProviderRow | "new" | null>(null);
@@ -48,8 +57,8 @@ function ProvidersTab() {
   const ano = new Date().getFullYear();
 
   const providers = useQuery({
-    queryKey: ["providers", estado],
-    queryFn: () => api<ProviderRow[]>(`/providers${estado ? `?ativo=${estado}` : ""}`),
+    queryKey: ["providers", tipo, estado],
+    queryFn: () => api<ProviderRow[]>(`/providers?tipo=${tipo}${estado ? `&ativo=${estado}` : ""}`),
     keepPreviousData: true,
   });
 
@@ -69,7 +78,7 @@ function ProvidersTab() {
             <option value="false">Inactivos</option>
             <option value="">Todos</option>
           </Select>
-          {canCreate && <Button onClick={() => setEditing("new")}>Novo provider</Button>}
+          {canCreate && <Button onClick={() => setEditing("new")}>Novo parceiro</Button>}
         </div>
         {toggle.error ? <div className="p-4"><Alert>{errorMessage(toggle.error)}</Alert></div> : null}
         {providers.isLoading ? (
@@ -81,16 +90,15 @@ function ProvidersTab() {
             <table className="min-w-full divide-y divide-ink-100">
               <thead className="bg-ink-50/60">
                 <tr>
-                  <th className={th}>Provider</th>
-                  <th className={th}>Tipos</th>
-                  <th className={th}>PO {ano}</th>
-                  <th className={`${th} text-right`}>Orçamento mensal {ano}</th>
+                  <th className={th}>Parceiro</th>
+                  {residencial && <th className={th}>PO {ano}</th>}
+                  {residencial && <th className={`${th} text-right`}>Orçamento mensal {ano}</th>}
                   <th className={th}>Estado</th>
                   <th className={`${th} text-right`}>Acções</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-100">
-                {providers.data!.length === 0 && <EmptyRow colSpan={6}>Nenhum provider.</EmptyRow>}
+                {providers.data!.length === 0 && <EmptyRow colSpan={residencial ? 5 : 3}>Nenhum parceiro.</EmptyRow>}
                 {providers.data!.map((p) => {
                   const def = p.budgets.find((b) => b.ano === ano && b.teamId === null);
                   const perTeam = p.budgets.filter((b) => b.ano === ano && b.teamId !== null).length;
@@ -100,20 +108,17 @@ function ProvidersTab() {
                         <div className="font-medium text-navy-950">{p.nome}</div>
                         <div className="text-xs text-ink-500">{[p.nif && `NIF ${p.nif}`, p.contacto, p.email].filter(Boolean).join(" · ") || "—"}</div>
                       </td>
-                      <td className={td}>
-                        <div className="flex flex-wrap gap-1">
-                          {p.tipos.map((t) => <Badge key={t} tone={t === "PROVIDERS" ? "navy" : "brand"}>{BILLING_TYPE_LABELS[t]}</Badge>)}
-                        </div>
-                      </td>
-                      <td className={`${td} tabular-nums`}>{def?.po || "—"}</td>
-                      <td className={`${td} text-right tabular-nums`}>
-                        {formatKz(def?.orcamentoMensalCent)}
-                        {perTeam > 0 && <div className="text-xs text-ink-400">+ {perTeam} por equipa</div>}
-                      </td>
+                      {residencial && <td className={`${td} tabular-nums`}>{def?.po || "—"}</td>}
+                      {residencial && (
+                        <td className={`${td} text-right tabular-nums`}>
+                          {formatKz(def?.orcamentoMensalCent)}
+                          {perTeam > 0 && <div className="text-xs text-ink-400">+ {perTeam} por equipa</div>}
+                        </td>
+                      )}
                       <td className={td}>{p.ativo ? <Badge tone="green">Activo</Badge> : <Badge tone="red">Inactivo</Badge>}</td>
                       <td className={`${td} whitespace-nowrap text-right`}>
                         <div className="flex justify-end gap-1.5">
-                          <Button size="sm" variant="secondary" onClick={() => setBudgetsOf(p.id)}>PO e orçamento</Button>
+                          {residencial && <Button size="sm" variant="secondary" onClick={() => setBudgetsOf(p.id)}>PO e orçamento</Button>}
                           {canEdit && <Button size="sm" variant="secondary" onClick={() => setEditing(p)}>Editar</Button>}
                           {canDelete && (
                             <Button size="sm" variant={p.ativo ? "danger" : "secondary"} disabled={toggle.isLoading} onClick={() => toggle.mutate(p)}>
@@ -130,27 +135,28 @@ function ProvidersTab() {
           </div>
         )}
       </Card>
-      {editing && <ProviderForm provider={editing === "new" ? null : editing} onClose={() => setEditing(null)} />}
+      {editing && <ProviderForm tipo={tipo} provider={editing === "new" ? null : editing} onClose={() => setEditing(null)} />}
       {budgetsProvider && <BudgetsModal provider={budgetsProvider} canEdit={canEdit} onClose={() => setBudgetsOf(null)} />}
     </>
   );
 }
 
-function ProviderForm({ provider, onClose }: { provider: ProviderRow | null; onClose(): void }) {
+function ProviderForm({ tipo, provider, onClose }: { tipo: BillingType; provider: ProviderRow | null; onClose(): void }) {
   const qc = useQueryClient();
   const [form, setForm] = useState({
     nome: provider?.nome || "",
     nif: provider?.nif || "",
     contacto: provider?.contacto || "",
     email: provider?.email || "",
-    tipos: provider?.tipos || (["PROVIDERS"] as BillingType[]),
   });
   const [error, setError] = useState<string | null>(null);
 
   const save = useMutation({
     mutationFn: () => {
-      const data = validate(providerCreateSchema, form);
-      return provider ? apiPatch(`/providers/${provider.id}`, data) : apiPost("/providers", data);
+      // O módulo do parceiro fica fixo: escolhido pela página onde é criado
+      return provider
+        ? apiPatch(`/providers/${provider.id}`, validate(providerUpdateSchema, form))
+        : apiPost("/providers", validate(providerCreateSchema, { ...form, tipo }));
     },
     onSuccess: () => {
       qc.invalidateQueries(["providers"]);
@@ -165,12 +171,9 @@ function ProviderForm({ provider, onClose }: { provider: ProviderRow | null; onC
     save.mutate();
   }
 
-  const toggleTipo = (t: BillingType) =>
-    setForm((f) => ({ ...f, tipos: f.tipos.includes(t) ? f.tipos.filter((x) => x !== t) : [...f.tipos, t] }));
-
   return (
     <Modal
-      title={provider ? "Editar provider" : "Novo provider"}
+      title={provider ? "Editar parceiro" : "Novo parceiro"}
       onClose={onClose}
       footer={
         <>
@@ -193,16 +196,6 @@ function ProviderForm({ provider, onClose }: { provider: ProviderRow | null; onC
         </div>
         <Field label="Email">
           <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        </Field>
-        <Field label="Tipos de facturação servidos" group>
-          <div className="flex gap-4">
-            {BILLING_TYPES.map((t) => (
-              <label key={t} className="flex items-center gap-2 text-sm">
-                <input type="checkbox" className="accent-brand-500" checked={form.tipos.includes(t)} onChange={() => toggleTipo(t)} />
-                {BILLING_TYPE_LABELS[t]}
-              </label>
-            ))}
-          </div>
         </Field>
         {error && <Alert>{error}</Alert>}
       </form>
@@ -229,7 +222,7 @@ function BudgetsModal({ provider, canEdit, onClose }: { provider: ProviderRow; c
     const yearRows = provider.budgets.filter((b) => b.ano === ano);
     const rows: BudgetDraft[] = [{ teamId: null, label: "Todas as equipas (por omissão)", po: "", orcamentoMensalCent: null }];
     const teamList = new Map<string, string>();
-    for (const t of teams.data || []) teamList.set(t.id, t.nome);
+    for (const t of teams.data || []) if (t.tipo === "PROVIDERS") teamList.set(t.id, t.nome); // só equipas da Rede Residencial
     for (const b of yearRows) if (b.team) teamList.set(b.team.id, b.team.nome);
     for (const [id, nome] of teamList) rows.push({ teamId: id, label: nome, po: "", orcamentoMensalCent: null });
     for (const r of rows) {

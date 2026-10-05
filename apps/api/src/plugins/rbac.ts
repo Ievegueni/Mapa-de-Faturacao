@@ -1,4 +1,4 @@
-import { can } from "@cf/shared";
+import { BILLING_TYPES, BillingType, can } from "@cf/shared";
 import { FastifyRequest } from "fastify";
 import { forbidden } from "../lib/errors";
 import { AuthUser } from "./auth";
@@ -14,6 +14,16 @@ export function requirePermission(module: string, action: string) {
 export function scopeFilter(user: AuthUser): { teamId?: { in: string[] } } {
   if (user.role === "GESTOR") return {};
   return { teamId: { in: user.teamIds } };
+}
+
+/** Módulos a que o utilizador tem acesso: Gestor todos; restantes os tipos das suas equipas. */
+export function userBillingTypes(user: AuthUser): BillingType[] {
+  return user.role === "GESTOR" ? BILLING_TYPES : Array.from(new Set(user.teams.map((t) => t.tipo)));
+}
+
+/** 403 se o utilizador não tiver acesso ao módulo (Rede Residencial ou Combustível e Geradores). */
+export function assertBillingType(user: AuthUser, tipo: BillingType) {
+  if (!userBillingTypes(user).includes(tipo)) throw forbidden("Sem acesso a este módulo");
 }
 
 /** 403 se o utilizador não tiver acesso à equipa (Gestor tem acesso a todas). */

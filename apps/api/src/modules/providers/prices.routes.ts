@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { badRequest, conflict, notFound, parse } from "../../lib/errors";
 import { toDate, toIsoDate } from "../../lib/dates";
-import { requirePermission } from "../../plugins/rbac";
+import { assertBillingType, requirePermission } from "../../plugins/rbac";
 
 type PriceTableRow = Prisma.PriceTableGetPayload<{ include: { rentPrices: true } }>;
 
@@ -18,6 +18,8 @@ const rentOrder: Prisma.RentPriceOrderByWithRelationInput[] = [
 
 const pricesRoutes: FastifyPluginAsync = async (app) => {
   app.addHook("onRequest", app.authenticate);
+  // Preços e faixas de desconto pertencem ao módulo Combustível e Geradores.
+  app.addHook("preHandler", async (req) => assertBillingType(req.auth, "GERADORES"));
   const view = requirePermission("prices_targets", "view");
   const edit = requirePermission("prices_targets", "edit");
 
@@ -50,7 +52,9 @@ const pricesRoutes: FastifyPluginAsync = async (app) => {
     const body = (req.body || {}) as Record<string, unknown>;
     const data = parse(priceTableCreateSchema, body);
     const { copyFromId } = parse(z.object({ copyFromId: z.string().optional() }), { copyFromId: body.copyFromId });
-    if (!(await app.prisma.provider.findUnique({ where: { id: data.providerId } }))) throw notFound("Provider não encontrado");
+    const provider = await app.prisma.provider.findUnique({ where: { id: data.providerId } });
+    if (!provider) throw notFound("Parceiro não encontrado");
+    if (provider.tipo !== "GERADORES") throw badRequest("Os preços só existem nos parceiros de Combustível e Geradores");
     const validFrom = toDate(data.validFrom);
     await assertFreeDate(data.providerId, validFrom);
 

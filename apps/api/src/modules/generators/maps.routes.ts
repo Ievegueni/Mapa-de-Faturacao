@@ -101,7 +101,7 @@ const mapsRoutes: FastifyPluginAsync = async (app) => {
     const team = await app.prisma.team.findUnique({ where: { id: data.teamId } });
     if (!team || !team.ativo || team.tipo !== "GERADORES") throw badRequest("Equipa inválida (tem de ser de Geradores e estar activa)");
     const provider = await app.prisma.provider.findUnique({ where: { id: data.providerId } });
-    if (!provider || !provider.ativo || !provider.tipos.includes("GERADORES")) throw badRequest("Provider inválido para Geradores");
+    if (!provider || !provider.ativo || provider.tipo !== "GERADORES") throw badRequest("Provider inválido para Geradores");
     const exists = await app.prisma.generatorMonthlyMap.findUnique({ where: { teamId_providerId_ano_mes: data } });
     if (exists) throw conflict("Já existe um mapa desta equipa e provider para este mês");
     const map = await app.prisma.generatorMonthlyMap.create({ data, include: mapInclude });

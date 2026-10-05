@@ -24,7 +24,7 @@ export default function ChangePasswordPage() {
     try {
       const me = await apiPost<Me>("/auth/change-password", parsed.data);
       setUser(me);
-      navigate(me.homePath, { replace: true });
+      navigate("/", { replace: true });
     } catch (err) {
       setError(errorMessage(err));
     } finally {

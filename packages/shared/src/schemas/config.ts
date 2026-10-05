@@ -39,10 +39,11 @@ export const providerCreateSchema = z.object({
     .union([z.string().trim().toLowerCase().email("Email inválido"), z.literal(""), z.null()])
     .optional()
     .transform((v) => (v ? v : null)),
-  tipos: z.array(billingTypeSchema).min(1, "Escolha pelo menos um tipo de facturação"),
+  /** Módulo do parceiro (listas separadas): não muda depois de criado. */
+  tipo: billingTypeSchema,
 });
 
-export const providerUpdateSchema = providerCreateSchema.extend({ ativo: z.boolean() }).partial();
+export const providerUpdateSchema = providerCreateSchema.omit({ tipo: true }).extend({ ativo: z.boolean() }).partial();
 
 export const providerBudgetSchema = z.object({
   /** Vazio = todas as equipas. */

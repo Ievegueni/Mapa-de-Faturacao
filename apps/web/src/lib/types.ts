@@ -70,7 +70,7 @@ export interface ProviderRow {
   nif: string | null;
   contacto: string | null;
   email: string | null;
-  tipos: BillingType[];
+  tipo: BillingType;
   ativo: boolean;
   budgets: BudgetRow[];
 }

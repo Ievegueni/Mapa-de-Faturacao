@@ -49,7 +49,7 @@ describe.skipIf(!TEST_DB)("mapas, medições e importação de geradores", () =>
     await app.ready();
     team = (await prisma.team.create({ data: { nome: "Geradores Import", tipo: "GERADORES" } })).id;
     teamB = (await prisma.team.create({ data: { nome: "Geradores Outra", tipo: "GERADORES" } })).id;
-    provider = (await prisma.provider.create({ data: { nome: "Anglobal Import", tipos: ["GERADORES"] } })).id;
+    provider = (await prisma.provider.create({ data: { nome: "Anglobal Import", tipo: "GERADORES" } })).id;
     await prisma.priceTable.create({
       data: { providerId: provider, validFrom: new Date("2026-01-01"), precoCombustivelCent: BigInt(42000), precoServAbastCent: BigInt(4800), ivaPercent: "14" },
     });

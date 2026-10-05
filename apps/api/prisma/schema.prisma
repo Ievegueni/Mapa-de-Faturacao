@@ -86,13 +86,15 @@ model UserPermission {
 
 // ---------- Página única de providers ----------
 
+/// Parceiro de UM módulo: Rede Residencial (PROVIDERS) ou Combustível e Geradores (GERADORES).
+/// As listas são separadas: a mesma empresa nos dois módulos tem dois registos.
 model Provider {
   id            String                @id @default(cuid())
-  nome          String                @unique
+  nome          String
+  tipo          BillingType
   nif           String?
   contacto      String?
   email         String?
-  tipos         BillingType[]
   ativo         Boolean               @default(true)
   budgets       ProviderBudget[]
   priceTables   PriceTable[]
@@ -100,6 +102,8 @@ model Provider {
   invoices      ProviderInvoice[]
   generators    Generator[]
   generatorMaps GeneratorMonthlyMap[]
+
+  @@unique([nome, tipo])
 }
 
 /// PO e orçamento mensal por provider/equipa/ano. teamId vazio = aplica-se a todas as equipas

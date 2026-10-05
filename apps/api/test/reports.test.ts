@@ -5,7 +5,8 @@ const ANO = 2029;
 
 describe.skipIf(!TEST_DB)("relatórios", () => {
   const { app, prisma } = createTestApp();
-  let provider: string;
+  let provider: string; // Rede Residencial
+  let genProvider: string; // Combustível e Geradores
   let pTeam: string;
   let gestor: string;
   let supervisor: string;
@@ -19,9 +20,10 @@ describe.skipIf(!TEST_DB)("relatórios", () => {
     await app.ready();
     const gTeam = (await prisma.team.create({ data: { nome: "Rel Geradores", tipo: "GERADORES" } })).id;
     pTeam = (await prisma.team.create({ data: { nome: "Rel Providers", tipo: "PROVIDERS" } })).id;
-    provider = (await prisma.provider.create({ data: { nome: "Rel Prov", tipos: ["GERADORES", "PROVIDERS"] } })).id;
+    provider = (await prisma.provider.create({ data: { nome: "Rel Prov", tipo: "PROVIDERS" } })).id;
+    genProvider = (await prisma.provider.create({ data: { nome: "Rel Prov", tipo: "GERADORES" } })).id;
     await prisma.providerBudget.create({ data: { providerId: provider, teamId: null, ano: ANO, orcamentoMensalCent: BigInt(100000000) } });
-    await prisma.priceTable.create({ data: { providerId: provider, validFrom: new Date(`${ANO}-01-01`), precoCombustivelCent: BigInt(42000), precoServAbastCent: BigInt(4800), ivaPercent: "14" } });
+    await prisma.priceTable.create({ data: { providerId: genProvider, validFrom: new Date(`${ANO}-01-01`), precoCombustivelCent: BigInt(42000), precoServAbastCent: BigInt(4800), ivaPercent: "14" } });
     const g = await createUser(prisma, { email: "g@rel.ao", role: "GESTOR" });
     supId = (await createUser(prisma, { email: "s@rel.ao", role: "SUPERVISOR", teamIds: [gTeam, pTeam] })).id;
     await createUser(prisma, { email: "t@rel.ao", role: "TECNICO", teamIds: [gTeam] });
@@ -37,9 +39,9 @@ describe.skipIf(!TEST_DB)("relatórios", () => {
     });
     const site1 = await prisma.site.create({ data: { teamId: gTeam, nome: "Rel Site L", regiao: "Norte", provincia: "Luanda" } });
     const site2 = await prisma.site.create({ data: { teamId: gTeam, nome: "Rel Site H", regiao: "Sul", provincia: "Huíla" } });
-    const g1 = await prisma.generator.create({ data: { siteId: site1.id, providerId: provider, numeroSerie: "REL-1", potenciaKVA: 20 } });
-    const g2 = await prisma.generator.create({ data: { siteId: site2.id, providerId: provider, numeroSerie: "REL-2", potenciaKVA: 15 } });
-    const map = (await app.inject({ method: "POST", url: "/api/generators/maps", headers: bearer(supervisor), payload: { teamId: gTeam, providerId: provider, ano: ANO, mes: 8 } })).json();
+    const g1 = await prisma.generator.create({ data: { siteId: site1.id, providerId: genProvider, numeroSerie: "REL-1", potenciaKVA: 20 } });
+    const g2 = await prisma.generator.create({ data: { siteId: site2.id, providerId: genProvider, numeroSerie: "REL-2", potenciaKVA: 15 } });
+    const map = (await app.inject({ method: "POST", url: "/api/generators/maps", headers: bearer(supervisor), payload: { teamId: gTeam, providerId: genProvider, ano: ANO, mes: 8 } })).json();
     for (const [gen, litros, pen] of [[g1.id, "100", "50000"], [g2.id, "200.5", ""]]) {
       await app.inject({ method: "POST", url: `/api/generators/maps/${map.id}/measurements`, headers: bearer(supervisor), payload: { generatorId: gen, dias: 31, horasN1: "0", horasN: "310", litros, penSLACent: pen } });
     }
@@ -77,11 +79,14 @@ describe.skipIf(!TEST_DB)("relatórios", () => {
     expect((await data(supervisor, "tipo=GERADORES&modelo=auto_medicao&mes=8&regiao=Sul")).json().secoes[0].linhas).toHaveLength(1);
     expect((await data(supervisor, "tipo=GERADORES&modelo=auto_medicao")).statusCode).toBe(400); // mês obrigatório
 
-    const rm = (await data(supervisor, `tipo=GERADORES&modelo=resumo_mes&mes=8&providerId=${provider}`)).json();
+    // Módulos separados: um parceiro da Rede Residencial não serve para relatórios de Geradores (e vice-versa)
+    expect((await data(gestor, `tipo=GERADORES&modelo=resumo_mes&mes=8&providerId=${provider}`)).statusCode).toBe(404);
+    expect((await data(gestor, `tipo=PROVIDERS&modelo=por_provider&providerId=${genProvider}`)).statusCode).toBe(404);
+    const rm = (await data(supervisor, `tipo=GERADORES&modelo=resumo_mes&mes=8&providerId=${genProvider}`)).json();
     expect(rm.secoes[0].linhas).toHaveLength(6);
     expect(rm.secoes[0].totais.categoria).toBe("Total a pagar");
 
-    const v = (await data(supervisor, `tipo=GERADORES&modelo=validacoes_anual&providerId=${provider}`)).json();
+    const v = (await data(supervisor, `tipo=GERADORES&modelo=validacoes_anual&providerId=${genProvider}`)).json();
     expect(v.secoes[0].tipoPorLinha).toBe(true);
     const parque = v.secoes[0].linhas.find((l: { indicador: string }) => l.indicador === "Parque de geradores");
     expect(parque.m8).toBe(2);

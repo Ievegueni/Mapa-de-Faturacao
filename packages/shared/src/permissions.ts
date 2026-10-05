@@ -25,10 +25,10 @@ export type PermissionKey = string;
 
 export const MODULE_LABELS: Record<Module, string> = {
   dashboard: "Dashboard",
-  providers: "Providers",
-  prices_targets: "Preços e targets",
-  billing_providers: "Facturação de providers",
-  billing_generators: "Controlo de geradores",
+  providers: "Parceiros",
+  prices_targets: "Preços, faixas e targets (Geradores)",
+  billing_providers: "Rede Residencial — facturas",
+  billing_generators: "Combustível e Geradores — mapas",
   reports: "Relatórios",
   users: "Utilizadores",
   teams: "Equipas",
@@ -52,9 +52,16 @@ export const ROLE_LABELS: Record<Role, string> = {
   TECNICO: "Técnico",
 };
 
+/** Os dois módulos da plataforma (o tipo PROVIDERS é a Rede Residencial). */
 export const BILLING_TYPE_LABELS: Record<BillingType, string> = {
-  PROVIDERS: "Providers",
-  GERADORES: "Geradores",
+  PROVIDERS: "Rede Residencial",
+  GERADORES: "Combustível e Geradores",
+};
+
+/** Prefixo das rotas de cada módulo na web. */
+export const MODULE_BASE: Record<BillingType, string> = {
+  PROVIDERS: "/residencial",
+  GERADORES: "/geradores",
 };
 
 export function permissionKey(module: string, action: string): PermissionKey {

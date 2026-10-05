@@ -62,7 +62,7 @@ export async function buildImportPlan(db: Db, ctx: MapContext, parsed: ParsedRow
     db.site.findMany({ where: { teamId: map.teamId } }),
     db.generator.findMany({ where: { numeroSerie: { in: series } }, include: { site: { select: { teamId: true } } } }),
     db.generatorMeasurement.findMany({ where: { mapId: map.id }, select: { id: true, generatorId: true, state: true, servExtrasCent: true, penExcessoHorasCent: true, penSLACent: true, penNivelCombustCent: true, penAvariaCent: true } }),
-    db.provider.findMany({ where: { ativo: true }, select: { id: true, nome: true } }),
+    db.provider.findMany({ where: { ativo: true, tipo: "GERADORES" }, select: { id: true, nome: true } }),
     mediaLitrosBySite(db, map.teamId, map.ano, map.mes),
   ]);
 

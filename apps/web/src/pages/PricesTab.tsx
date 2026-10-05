@@ -12,7 +12,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 /** Separador Preços: tabelas com vigência por provider; todos os campos podem ficar vazios. */
 export default function PricesTab() {
   const canEdit = usePermission("prices_targets", "edit");
-  const providers = useQuery({ queryKey: ["providers", "true"], queryFn: () => api<ProviderRow[]>("/providers?ativo=true") });
+  const providers = useQuery({ queryKey: ["providers", "GERADORES", "true"], queryFn: () => api<ProviderRow[]>("/providers?ativo=true&tipo=GERADORES") });
   const [providerId, setProviderId] = useState<string>("");
   const [tableId, setTableId] = useState<string>("");
   const [creating, setCreating] = useState(false);
@@ -33,7 +33,7 @@ export default function PricesTab() {
 
   if (providers.isLoading) return <Spinner />;
   if (providers.error) return <Alert>{errorMessage(providers.error)}</Alert>;
-  if (!providers.data?.length) return <Alert kind="info">Crie primeiro um provider.</Alert>;
+  if (!providers.data?.length) return <Alert kind="info">Crie primeiro um parceiro.</Alert>;
 
   const table = tables.data?.find((t) => t.id === tableId) || null;
 

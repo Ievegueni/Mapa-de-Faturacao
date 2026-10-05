@@ -47,7 +47,7 @@ Cria (tudo inventado, numa só transacção; ~5 s):
 | Técnico (Geradores Sul) | `david.tecnico@demo.ao` | `Demo-2026-Teste` |
 | Técnica (Providers Luanda; pode exportar) | `elsa.tecnica@demo.ao` | `Demo-2026-Teste` |
 
-- 4 equipas, preços completos (Comatel sem aluguer, para ver a flag `SEM_PRECO_ALUGUER`), targets global e por provider.
+- 4 equipas (2 da Rede Residencial, 2 de Combustível e Geradores), parceiros em listas separadas por módulo, preços completos (Comatel sem aluguer, para ver a flag `SEM_PRECO_ALUGUER`), targets global e por provider.
 - 100 sites / 102 geradores e mapas de Janeiro até ao mês anterior: meses antigos fechados, penúltimo validado, último em rascunho/submetido; penalizações, indicadores manuais e avisos (horas negativas, litros acima da média, gerador removido).
 - 72 facturas de providers em vários estados, com pagamentos parciais e um mês acima do orçamento.
 

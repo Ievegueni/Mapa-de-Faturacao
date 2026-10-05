@@ -5,17 +5,22 @@ describe.skipIf(!TEST_DB)("providers, preços, faixas e targets", () => {
   const { app, prisma } = createTestApp();
   let gestor: string;
   let supervisor: string;
-  let providerId: string;
+  let providerId: string; // Rede Residencial (PO e orçamento)
+  let genProviderId: string; // Combustível e Geradores (preços e targets)
+  let supResidencial: string;
   let teamId: string;
 
   beforeAll(async () => {
     await app.ready();
     await createUser(prisma, { email: "gestor@config.ao", role: "GESTOR" });
-    await createUser(prisma, { email: "super@config.ao", role: "SUPERVISOR" });
+    teamId = (await prisma.team.create({ data: { nome: "Providers Config", tipo: "PROVIDERS" } })).id;
+    const gTeam = (await prisma.team.create({ data: { nome: "Geradores Config", tipo: "GERADORES" } })).id;
+    await createUser(prisma, { email: "super@config.ao", role: "SUPERVISOR", teamIds: [gTeam] });
+    await createUser(prisma, { email: "supres@config.ao", role: "SUPERVISOR", teamIds: [teamId] });
     await createUser(prisma, { email: "tec@config.ao", role: "TECNICO" });
     gestor = (await login(app, "gestor@config.ao")).token;
     supervisor = (await login(app, "super@config.ao")).token;
-    teamId = (await prisma.team.create({ data: { nome: "Providers Config", tipo: "PROVIDERS" } })).id;
+    supResidencial = (await login(app, "supres@config.ao")).token;
   });
 
   afterAll(async () => {
@@ -27,13 +32,26 @@ describe.skipIf(!TEST_DB)("providers, preços, faixas e targets", () => {
       method: "POST",
       url: "/api/providers",
       headers: bearer(gestor),
-      payload: { nome: "Provider Teste", nif: "", email: "", tipos: ["GERADORES"] },
+      payload: { nome: "Provider Teste", nif: "", email: "", tipo: "PROVIDERS" },
     });
     expect(created.statusCode).toBe(201);
     expect(created.json().nif).toBeNull();
     providerId = created.json().id;
 
-    expect((await app.inject({ method: "GET", url: "/api/providers", headers: bearer(supervisor) })).statusCode).toBe(200);
+    // O mesmo nome pode existir no outro módulo (listas separadas), mas não repetido no mesmo
+    const gen = await app.inject({ method: "POST", url: "/api/providers", headers: bearer(gestor), payload: { nome: "Provider Teste", tipo: "GERADORES" } });
+    expect(gen.statusCode).toBe(201);
+    genProviderId = gen.json().id;
+    expect((await app.inject({ method: "POST", url: "/api/providers", headers: bearer(gestor), payload: { nome: "provider teste", tipo: "GERADORES" } })).statusCode).toBe(409);
+
+    // Cada supervisor só vê os parceiros do seu módulo
+    const listG = await app.inject({ method: "GET", url: "/api/providers", headers: bearer(supervisor) });
+    expect(listG.statusCode).toBe(200);
+    expect(listG.json().every((p: { tipo: string }) => p.tipo === "GERADORES")).toBe(true);
+    const listR = (await app.inject({ method: "GET", url: "/api/providers", headers: bearer(supResidencial) })).json();
+    expect(listR.every((p: { tipo: string }) => p.tipo === "PROVIDERS")).toBe(true);
+    expect((await app.inject({ method: "GET", url: "/api/providers?tipo=GERADORES", headers: bearer(supResidencial) })).statusCode).toBe(403);
+    expect((await app.inject({ method: "GET", url: `/api/providers/${genProviderId}`, headers: bearer(supResidencial) })).statusCode).toBe(403);
     const denied = await app.inject({
       method: "PATCH",
       url: `/api/providers/${providerId}`,
@@ -44,7 +62,7 @@ describe.skipIf(!TEST_DB)("providers, preços, faixas e targets", () => {
     const tec = (await login(app, "tec@config.ao")).token;
     expect((await app.inject({ method: "GET", url: "/api/providers", headers: bearer(tec) })).statusCode).toBe(403);
 
-    const noType = await app.inject({ method: "POST", url: "/api/providers", headers: bearer(gestor), payload: { nome: "Sem tipo", tipos: [] } });
+    const noType = await app.inject({ method: "POST", url: "/api/providers", headers: bearer(gestor), payload: { nome: "Sem tipo" } });
     expect(noType.statusCode).toBe(400);
   });
 
@@ -83,7 +101,7 @@ describe.skipIf(!TEST_DB)("providers, preços, faixas e targets", () => {
       method: "POST",
       url: "/api/prices",
       headers: bearer(gestor),
-      payload: { providerId, validFrom: "2026-01-01", precoCombustivelCent: "42000", ivaPercent: null },
+      payload: { providerId: genProviderId, validFrom: "2026-01-01", precoCombustivelCent: "42000", ivaPercent: null },
     });
     expect(created.statusCode).toBe(201);
     const table = created.json();
@@ -108,7 +126,7 @@ describe.skipIf(!TEST_DB)("providers, preços, faixas e targets", () => {
       method: "POST",
       url: "/api/prices",
       headers: bearer(gestor),
-      payload: { providerId, validFrom: "2026-01-01" },
+      payload: { providerId: genProviderId, validFrom: "2026-01-01" },
     });
     expect(dup.statusCode).toBe(409);
 
@@ -117,10 +135,14 @@ describe.skipIf(!TEST_DB)("providers, preços, faixas e targets", () => {
     const supEdit = await app.inject({ method: "PATCH", url: `/api/prices/${table.id}`, headers: bearer(supervisor), payload: { ivaPercent: "10" } });
     expect(supEdit.statusCode).toBe(403);
     expect((await app.inject({ method: "GET", url: "/api/prices", headers: bearer(supervisor) })).statusCode).toBe(200);
+    // Preços, faixas e targets são do módulo Combustível e Geradores
+    expect((await app.inject({ method: "GET", url: "/api/prices", headers: bearer(supResidencial) })).statusCode).toBe(403);
+    expect((await app.inject({ method: "GET", url: "/api/targets?ano=2026", headers: bearer(supResidencial) })).statusCode).toBe(403);
+    expect((await app.inject({ method: "POST", url: "/api/prices", headers: bearer(gestor), payload: { providerId, validFrom: "2026-02-01" } })).statusCode).toBe(400);
   });
 
   it("linhas de aluguer: campos vazios e cópia para nova vigência", async () => {
-    const table = (await app.inject({ method: "GET", url: `/api/prices?providerId=${providerId}`, headers: bearer(gestor) })).json()[0];
+    const table = (await app.inject({ method: "GET", url: `/api/prices?providerId=${genProviderId}`, headers: bearer(gestor) })).json()[0];
     const added = await app.inject({
       method: "POST",
       url: `/api/prices/${table.id}/rent-prices`,
@@ -144,7 +166,7 @@ describe.skipIf(!TEST_DB)("providers, preços, faixas e targets", () => {
       method: "POST",
       url: "/api/prices",
       headers: bearer(gestor),
-      payload: { providerId, validFrom: "2026-07-01", copyFromId: table.id },
+      payload: { providerId: genProviderId, validFrom: "2026-07-01", copyFromId: table.id },
     });
     expect(copy.statusCode).toBe(201);
     expect(copy.json().precoServAbastCent).toBe("4800");
@@ -175,7 +197,7 @@ describe.skipIf(!TEST_DB)("providers, preços, faixas e targets", () => {
         ano: 2026,
         items: [
           { mes: 7, providerId: null, aluguerCent: "1000000000", combustivelCent: null },
-          { mes: 7, providerId, aluguerCent: null, combustivelCent: "50000000" },
+          { mes: 7, providerId: genProviderId, aluguerCent: null, combustivelCent: "50000000" },
           { mes: 8, providerId: null, aluguerCent: null, combustivelCent: null },
         ],
       },
@@ -204,9 +226,9 @@ describe.skipIf(!TEST_DB)("providers, preços, faixas e targets", () => {
       method: "PUT",
       url: "/api/targets",
       headers: bearer(gestor),
-      payload: { ano: 2026, items: [{ mes: 7, providerId, aluguerCent: null, combustivelCent: null }] },
+      payload: { ano: 2026, items: [{ mes: 7, providerId: genProviderId, aluguerCent: null, combustivelCent: null }] },
     });
-    expect(cleared.json().items.filter((i: { providerId: string | null }) => i.providerId === providerId)).toHaveLength(0);
+    expect(cleared.json().items.filter((i: { providerId: string | null }) => i.providerId === genProviderId)).toHaveLength(0);
 
     const denied = await app.inject({ method: "PUT", url: "/api/targets", headers: bearer(supervisor), payload: { ano: 2026, items: [] } });
     expect(denied.statusCode).toBe(403);

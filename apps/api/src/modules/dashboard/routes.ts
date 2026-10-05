@@ -56,7 +56,7 @@ const dashboardRoutes: FastifyPluginAsync = async (app) => {
     const [invoices, budgets, active, pending] = await Promise.all([
       app.prisma.providerInvoice.findMany({ where, select: { providerId: true, mes: true, valorFTCent: true, valorPagoCent: true } }),
       app.prisma.providerBudget.findMany({ where: { ano } }),
-      app.prisma.provider.findMany({ where: { ativo: true, tipos: { has: "PROVIDERS" }, ...(providerId ? { id: providerId } : {}) }, select: { id: true } }),
+      app.prisma.provider.findMany({ where: { ativo: true, tipo: "PROVIDERS", ...(providerId ? { id: providerId } : {}) }, select: { id: true } }),
       app.prisma.providerInvoice.findMany({
         where: { ...where, OR: [{ state: "SUBMETIDO" }, { status: { not: "FECHADO" } }] },
         include: { provider: { select: { nome: true } }, team: { select: { nome: true } } },

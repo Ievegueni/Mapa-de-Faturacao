@@ -169,7 +169,7 @@ export interface ProvidersImportOptions {
 /** Grava as facturas do ficheiro. Devolve o que foi criado, ignorado e os avisos. */
 export async function importProvidersWorkbook(prisma: PrismaClient, buffer: Buffer, opts: ProvidersImportOptions) {
   const { invoices, payments } = await parseProvidersWorkbook(buffer);
-  const providers = await prisma.provider.findMany({ select: { id: true, nome: true } });
+  const providers = await prisma.provider.findMany({ where: { tipo: "PROVIDERS" }, select: { id: true, nome: true } });
   const providerOf = (name: string) => {
     const k = norm(name);
     return providers.find((p) => norm(p.nome) === k) ?? providers.find((p) => k.startsWith(norm(p.nome)) || norm(p.nome).startsWith(k)) ?? null;

@@ -22,7 +22,7 @@ export default function BillingProvidersPage() {
 
   return (
     <>
-      <PageHeader title="Facturação de Providers" subtitle="Facturas mensais por parceiro, pagamentos, dívida e orçamento." />
+      <PageHeader title="Facturas · Rede Residencial" subtitle="Facturas mensais por parceiro, pagamentos, dívida e orçamento." />
       <Tabs<Tab>
         value={tab}
         onChange={(v) => setParams(v === "resumo" ? { tab: "resumo" } : {})}

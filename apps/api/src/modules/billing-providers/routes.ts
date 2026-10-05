@@ -69,7 +69,7 @@ const billingProvidersRoutes: FastifyPluginAsync = async (app) => {
     if (team.tipo !== "PROVIDERS") throw badRequest("A equipa não é do tipo Providers");
     const provider = await app.prisma.provider.findUnique({ where: { id: providerId } });
     if (!provider || !provider.ativo) throw badRequest("Parceiro inválido ou inactivo");
-    if (!provider.tipos.includes("PROVIDERS")) throw badRequest("O parceiro não está configurado para facturação de Providers");
+    if (provider.tipo !== "PROVIDERS") throw badRequest("O parceiro não está configurado para facturação de Providers");
   }
 
   /** PO do orçamento aplicável (equipa → por omissão) para o ano. */
@@ -94,7 +94,7 @@ const billingProvidersRoutes: FastifyPluginAsync = async (app) => {
       orderBy: { nome: "asc" },
     });
     const providers = await app.prisma.provider.findMany({
-      where: { ativo: true, tipos: { has: "PROVIDERS" } },
+      where: { ativo: true, tipo: "PROVIDERS" },
       select: { id: true, nome: true },
       orderBy: { nome: "asc" },
     });
@@ -331,7 +331,7 @@ const billingProvidersRoutes: FastifyPluginAsync = async (app) => {
       const [invoices, budgets, activeProviders] = await Promise.all([
         app.prisma.providerInvoice.findMany({ where, select: { providerId: true, mes: true, valorFTCent: true, valorPagoCent: true } }),
         app.prisma.providerBudget.findMany({ where: { ano } }),
-        app.prisma.provider.findMany({ where: { ativo: true, tipos: { has: "PROVIDERS" } }, select: { id: true } }),
+        app.prisma.provider.findMany({ where: { ativo: true, tipo: "PROVIDERS" }, select: { id: true } }),
       ]);
 
       const ids = Array.from(new Set([...activeProviders.map((p) => p.id), ...invoices.map((i) => i.providerId)]));

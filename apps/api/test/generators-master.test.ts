@@ -18,7 +18,7 @@ describe.skipIf(!TEST_DB)("sites e geradores (dados mestre)", () => {
     await app.ready();
     teamA = (await prisma.team.create({ data: { nome: "Ger A", tipo: "GERADORES" } })).id;
     teamB = (await prisma.team.create({ data: { nome: "Ger B", tipo: "GERADORES" } })).id;
-    provider = (await prisma.provider.create({ data: { nome: "Prop Ger", tipos: ["GERADORES"] } })).id;
+    provider = (await prisma.provider.create({ data: { nome: "Prop Ger", tipo: "GERADORES" } })).id;
     await createUser(prisma, { email: "g@gm.ao", role: "GESTOR" });
     await createUser(prisma, { email: "s@gm.ao", role: "SUPERVISOR", teamIds: [teamA] });
     await createUser(prisma, { email: "t@gm.ao", role: "TECNICO", teamIds: [teamA] });
@@ -56,7 +56,7 @@ describe.skipIf(!TEST_DB)("sites e geradores (dados mestre)", () => {
       siteId, providerId: provider, numeroSerie: "SN-2", dataInstalacao: "2024-03-01", dataRemocao: "2024-01-01",
     });
     expect(bad.statusCode).toBe(400);
-    const prov = (await prisma.provider.create({ data: { nome: "Só Prov", tipos: ["PROVIDERS"] } })).id;
+    const prov = (await prisma.provider.create({ data: { nome: "Só Prov", tipo: "PROVIDERS" } })).id;
     expect((await req("POST", supervisor, "/generators/generators", { siteId, providerId: prov, numeroSerie: "SN-3" })).statusCode).toBe(400);
 
     const g = res.json();

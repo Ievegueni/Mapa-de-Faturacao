@@ -107,7 +107,7 @@ export default function ImportTab({ map, onDone }: { map: GeneratorMapDetail; on
 
       {preview && (
         <>
-          {preview.semPrecos && <Alert>Não há tabela de preços em vigor para este provider e mês: os valores ficam a 0 até definir preços e recalcular.</Alert>}
+          {preview.semPrecos && <Alert>Não há tabela de preços em vigor para este parceiro e mês: os valores ficam a 0 até definir preços e recalcular.</Alert>}
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <Stat label="Linhas lidas" value={preview.linhasLidas.toLocaleString("pt-PT")} />
             <Stat label="Para importar" value={preview.linhasValidas.toLocaleString("pt-PT")} />

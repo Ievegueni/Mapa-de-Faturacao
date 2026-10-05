@@ -22,7 +22,7 @@ export default function MapsPage() {
     <>
       <PageHeader
         title="Mapas de geradores"
-        subtitle="Um mapa por equipa, provider e mês: Auto de Medição, validação e fecho."
+        subtitle="Um mapa por equipa, parceiro e mês: Auto de Medição, validação e fecho."
         actions={canCreate && options.data?.teams.length ? <Button onClick={() => setCreating(true)}>Novo mapa</Button> : undefined}
       />
       {options.data && options.data.teams.length === 0 && <Alert kind="info">Não pertence a nenhuma equipa de Geradores.</Alert>}
@@ -37,8 +37,8 @@ export default function MapsPage() {
               {options.data!.teams.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
             </Select>
           )}
-          <Select value={f.providerId} onChange={(e) => setF({ ...f, providerId: e.target.value })} className="w-44" aria-label="Provider">
-            <option value="">Todos os providers</option>
+          <Select value={f.providerId} onChange={(e) => setF({ ...f, providerId: e.target.value })} className="w-44" aria-label="Parceiro">
+            <option value="">Todos os parceiros</option>
             {options.data?.providers.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
           </Select>
         </div>
@@ -52,7 +52,7 @@ export default function MapsPage() {
               <thead className="bg-ink-50/60">
                 <tr>
                   <th className={th}>Mês</th>
-                  <th className={th}>Provider · equipa</th>
+                  <th className={th}>Parceiro · equipa</th>
                   <th className={th}>Estado</th>
                   <th className={`${th} text-right`}>Medições</th>
                   <th className={`${th} text-right`}>Litros</th>
@@ -129,7 +129,7 @@ function NewMapModal({ options, onClose, onCreated }: { options: GeneratorOption
             </Select>
           </Field>
         )}
-        <Field label="Provider">
+        <Field label="Parceiro">
           <Select required value={f.providerId} onChange={(e) => setF({ ...f, providerId: e.target.value })}>
             <option value="">Seleccionar…</option>
             {options.providers.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}

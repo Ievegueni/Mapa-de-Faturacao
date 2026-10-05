@@ -81,7 +81,7 @@ const generatorsMasterRoutes: FastifyPluginAsync = async (app) => {
   async function assertProvider(providerId: string) {
     const p = await app.prisma.provider.findUnique({ where: { id: providerId } });
     if (!p || !p.ativo) throw badRequest("Proprietário inválido ou inactivo");
-    if (!p.tipos.includes("GERADORES")) throw badRequest("O proprietário não está configurado para Geradores");
+    if (p.tipo !== "GERADORES") throw badRequest("O proprietário não está configurado para Geradores");
   }
 
   // ---------- Opções para filtros e formulários ----------
@@ -90,7 +90,7 @@ const generatorsMasterRoutes: FastifyPluginAsync = async (app) => {
     const teamWhere = { tipo: "GERADORES" as const, ativo: true, ...(req.auth.role === "GESTOR" ? {} : { id: { in: req.auth.teamIds } }) };
     const [teams, providers, provincias, potencias] = await Promise.all([
       app.prisma.team.findMany({ where: teamWhere, select: { id: true, nome: true }, orderBy: { nome: "asc" } }),
-      app.prisma.provider.findMany({ where: { ativo: true, tipos: { has: "GERADORES" } }, select: { id: true, nome: true }, orderBy: { nome: "asc" } }),
+      app.prisma.provider.findMany({ where: { ativo: true, tipo: "GERADORES" }, select: { id: true, nome: true }, orderBy: { nome: "asc" } }),
       app.prisma.site.findMany({ where: scopeFilter(req.auth), distinct: ["provincia"], select: { provincia: true }, orderBy: { provincia: "asc" } }),
       app.prisma.generator.findMany({
         where: { potenciaKVA: { not: null }, site: scopeFilter(req.auth) },

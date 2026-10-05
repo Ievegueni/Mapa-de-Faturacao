@@ -25,7 +25,7 @@ export default function SitesPage() {
 
   return (
     <>
-      <PageHeader title="Sites e geradores" subtitle="Dados mestre do Controlo de Geradores: sites, geradores, proprietários e potências." />
+      <PageHeader title="Sites e geradores" subtitle="Dados mestre de Combustível e Geradores: sites, geradores, proprietários e potências." />
       <Tabs<Tab>
         value={tab}
         onChange={(v) => setParams(v === "geradores" ? { tab: "geradores" } : {})}

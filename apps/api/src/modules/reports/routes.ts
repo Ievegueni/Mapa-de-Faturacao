@@ -68,14 +68,16 @@ const reportsRoutes: FastifyPluginAsync = async (app) => {
     if (f.teamId) assertTeamAccess(req.auth, f.teamId);
 
     const [team, provider] = await Promise.all([
-      f.teamId ? app.prisma.team.findUnique({ where: { id: f.teamId }, select: { nome: true } }) : null,
-      f.providerId ? app.prisma.provider.findUnique({ where: { id: f.providerId }, select: { nome: true } }) : null,
+      f.teamId ? app.prisma.team.findUnique({ where: { id: f.teamId }, select: { nome: true, tipo: true } }) : null,
+      f.providerId ? app.prisma.provider.findUnique({ where: { id: f.providerId }, select: { nome: true, tipo: true } }) : null,
     ]);
-    if (f.providerId && !provider) throw notFound("Provider não encontrado");
+    // Módulos separados: equipa e parceiro têm de ser do mesmo módulo do relatório.
+    if (f.providerId && (!provider || provider.tipo !== def.tipo)) throw notFound("Parceiro não encontrado neste módulo");
+    if (f.teamId && (!team || team.tipo !== def.tipo)) throw notFound("Equipa não encontrada neste módulo");
     const filtros: Record<string, string> = { Ano: String(f.ano) };
     if (f.mes) filtros["Mês"] = MONTHS_FULL[f.mes - 1];
     filtros["Equipa"] = team?.nome ?? (req.auth.role === "GESTOR" ? "Todas" : "As suas equipas");
-    if (def.filtros.includes("provider")) filtros["Provider"] = provider?.nome ?? "Todos";
+    if (def.filtros.includes("provider")) filtros["Parceiro"] = provider?.nome ?? "Todos";
     if (f.regiao) filtros["Região"] = f.regiao;
     if (f.provincia) filtros["Província"] = f.provincia;
 
@@ -253,7 +255,7 @@ const reportsRoutes: FastifyPluginAsync = async (app) => {
     });
     const [budgets, active] = await Promise.all([
       app.prisma.providerBudget.findMany({ where: { ano: f.ano } }),
-      app.prisma.provider.findMany({ where: { ativo: true, tipos: { has: "PROVIDERS" } }, select: { id: true, nome: true } }),
+      app.prisma.provider.findMany({ where: { ativo: true, tipo: "PROVIDERS" }, select: { id: true, nome: true } }),
     ]);
     const names = new Map([...active.map((p) => [p.id, p.nome] as const), ...invoices.map((i) => [i.provider.id, i.provider.nome] as const)]);
     const ids = Array.from(names.keys()).sort((a, b) => names.get(a)!.localeCompare(names.get(b)!));
@@ -535,7 +537,7 @@ const reportsRoutes: FastifyPluginAsync = async (app) => {
       titulo: "Medições com penalizações",
       colunas: [
         { key: "mes", label: "Mês", tipo: "texto" },
-        { key: "provider", label: "Provider", tipo: "texto" },
+        { key: "provider", label: "Parceiro", tipo: "texto" },
         { key: "site", label: "Site", tipo: "texto" },
         { key: "pp", label: "Código P.P.", tipo: "texto" },
         { key: "provincia", label: "Província", tipo: "texto" },

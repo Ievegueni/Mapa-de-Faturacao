@@ -1,7 +1,7 @@
-import { lazy, Suspense } from "react";
+import { lazy, ReactNode, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
-import { Spinner } from "./components/ui";
-import { HomeRedirect, RequireAuth, RequirePermission, RequireRole } from "./components/guards";
+import { Alert, PageHeader, Spinner } from "./components/ui";
+import { HomeRedirect, ModuleGate, RequireAuth, RequirePermission, RequireRole } from "./components/guards";
 import AppLayout from "./layouts/AppLayout";
 import ChangePasswordPage from "./pages/ChangePasswordPage";
 import LoginPage from "./pages/LoginPage";
@@ -22,31 +22,61 @@ const TeamsPage = lazy(() => import("./pages/TeamsPage"));
 const ReportsPage = lazy(() => import("./pages/reports/ReportsPage"));
 const UserPermissionsPage = lazy(() => import("./pages/UserPermissionsPage"));
 
+const perm = (module: string, action: string, page: ReactNode) => <RequirePermission module={module} action={action}>{page}</RequirePermission>;
+
+function NoAccess() {
+  return (
+    <>
+      <PageHeader title="Sem acesso" />
+      <Alert kind="info">Ainda não pertence a nenhuma equipa activa. Peça ao Gestor para o associar a uma equipa da Rede Residencial ou de Combustível e Geradores.</Alert>
+    </>
+  );
+}
+
+/**
+ * Dois módulos separados (CLAUDE.md §5.5): /residencial/* (Rede Residencial) e /geradores/* (Combustível e Geradores).
+ * As páginas comuns recebem o módulo por `tipo` e uma `key` para não partilharem estado ao mudar de módulo.
+ */
 export default function App() {
   return (
     <Suspense fallback={<Spinner />}>
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/trocar-password" element={<RequireAuth><ChangePasswordPage /></RequireAuth>} />
-      <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
-        <Route index element={<HomeRedirect />} />
-        <Route path="dashboard" element={<RequirePermission module="dashboard" action="view"><DashboardPage /></RequirePermission>} />
-        <Route path="meu-trabalho" element={<RequireRole roles={["TECNICO"]}><MyWorkPage /></RequireRole>} />
-        <Route path="utilizadores" element={<RequirePermission module="users" action="view"><UsersPage /></RequirePermission>} />
-        <Route path="utilizadores/:id/permissoes" element={<RequirePermission module="users" action="view"><UserPermissionsPage /></RequirePermission>} />
-        <Route path="equipas" element={<RequirePermission module="teams" action="view"><TeamsPage /></RequirePermission>} />
-        <Route path="facturacao/providers" element={<RequirePermission module="billing_providers" action="view"><BillingProvidersPage /></RequirePermission>} />
-        <Route path="geradores/mapas" element={<RequirePermission module="billing_generators" action="view"><MapsPage /></RequirePermission>} />
-        <Route path="geradores/mapas/:id" element={<RequirePermission module="billing_generators" action="view"><MapPage /></RequirePermission>} />
-        <Route path="geradores/validacoes" element={<RequirePermission module="billing_generators" action="view"><ValidationsPage /></RequirePermission>} />
-        <Route path="geradores/sites" element={<RequirePermission module="billing_generators" action="view"><SitesPage /></RequirePermission>} />
-        <Route path="relatorios" element={<RequirePermission module="reports" action="view"><ReportsPage /></RequirePermission>} />
-        <Route path="providers" element={<RequirePermission module="providers" action="view"><ProvidersPage /></RequirePermission>} />
-        <Route path="faixas-desconto" element={<RequirePermission module="prices_targets" action="view"><DiscountRulesPage /></RequirePermission>} />
-        <Route path="targets" element={<RequirePermission module="prices_targets" action="view"><TargetsPage /></RequirePermission>} />
-        <Route path="*" element={<HomeRedirect />} />
-      </Route>
-    </Routes>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/trocar-password" element={<RequireAuth><ChangePasswordPage /></RequireAuth>} />
+        <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
+          <Route index element={<HomeRedirect />} />
+
+          <Route path="residencial" element={<ModuleGate tipo="PROVIDERS" />}>
+            <Route index element={<HomeRedirect />} />
+            <Route path="meu-trabalho" element={<RequireRole roles={["TECNICO"]}><MyWorkPage key="PROVIDERS" tipo="PROVIDERS" /></RequireRole>} />
+            <Route path="dashboard" element={perm("dashboard", "view", <DashboardPage key="PROVIDERS" tipo="PROVIDERS" />)} />
+            <Route path="facturas" element={perm("billing_providers", "view", <BillingProvidersPage />)} />
+            <Route path="relatorios" element={perm("reports", "view", <ReportsPage key="PROVIDERS" tipo="PROVIDERS" />)} />
+            <Route path="parceiros" element={perm("providers", "view", <ProvidersPage key="PROVIDERS" tipo="PROVIDERS" />)} />
+          </Route>
+
+          <Route path="geradores" element={<ModuleGate tipo="GERADORES" />}>
+            <Route index element={<HomeRedirect />} />
+            <Route path="meu-trabalho" element={<RequireRole roles={["TECNICO"]}><MyWorkPage key="GERADORES" tipo="GERADORES" /></RequireRole>} />
+            <Route path="dashboard" element={perm("dashboard", "view", <DashboardPage key="GERADORES" tipo="GERADORES" />)} />
+            <Route path="mapas" element={perm("billing_generators", "view", <MapsPage />)} />
+            <Route path="mapas/:id" element={perm("billing_generators", "view", <MapPage />)} />
+            <Route path="validacoes" element={perm("billing_generators", "view", <ValidationsPage />)} />
+            <Route path="sites" element={perm("billing_generators", "view", <SitesPage />)} />
+            <Route path="relatorios" element={perm("reports", "view", <ReportsPage key="GERADORES" tipo="GERADORES" />)} />
+            <Route path="parceiros" element={perm("providers", "view", <ProvidersPage key="GERADORES" tipo="GERADORES" />)} />
+            <Route path="faixas-desconto" element={perm("prices_targets", "view", <DiscountRulesPage />)} />
+            <Route path="targets" element={perm("prices_targets", "view", <TargetsPage />)} />
+          </Route>
+
+          <Route path="utilizadores" element={perm("users", "view", <UsersPage />)} />
+          <Route path="utilizadores/:id/permissoes" element={perm("users", "view", <UserPermissionsPage />)} />
+          <Route path="equipas" element={perm("teams", "view", <TeamsPage />)} />
+          <Route path="sem-acesso" element={<NoAccess />} />
+          {/* Endereços antigos e página inicial do perfil (homePath) → página inicial do módulo */}
+          <Route path="*" element={<HomeRedirect />} />
+        </Route>
+      </Routes>
     </Suspense>
   );
 }

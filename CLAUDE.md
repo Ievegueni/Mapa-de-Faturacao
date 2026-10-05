@@ -8,8 +8,8 @@ Substituir os Excel manuais por uma plataforma web **leve** e multi-utilizador q
 
 | Tipo | Origem actual | O que controla |
 |---|---|---|
-| **PROVIDERS** | `Novo Mapa de Facturação.xlsx` | Facturas mensais por parceiro, pagamentos, dívida, orçamento e remanescente |
-| **GERADORES** | `Auto de Medição – Energia – Sites` + `MAPA RESUMO VALIDAÇÕES MENSAIS` | Medição mensal de ~1.160 sites com gerador (aluguer, combustível, abastecimento, descontos, penalizações), validação e resumo anual |
+| **PROVIDERS** (módulo **Rede Residencial**) | `Novo Mapa de Facturação.xlsx` | Facturas mensais por parceiro, pagamentos, dívida, orçamento e remanescente |
+| **GERADORES** (módulo **Combustível e Geradores**) | `Auto de Medição – Energia – Sites` + `MAPA RESUMO VALIDAÇÕES MENSAIS` | Medição mensal de ~1.160 sites com gerador (aluguer, combustível, abastecimento, descontos, penalizações), validação e resumo anual |
 
 **Princípios:**
 - O trabalho tem de ficar mais fácil.
@@ -177,6 +177,21 @@ O perfil define permissões **por omissão**. O Gestor pode **ajustar por utiliz
 | SUPERVISOR | Dashboard da(s) equipa(s) | Inserção + rascunhos para validar + fecho do mês |
 | TECNICO | "O meu trabalho" (rascunhos e pendentes) | Só o formulário do tipo da sua equipa; os campos calculados ficam em leitura apenas |
 
+### 5.5 Dois módulos separados
+
+A plataforma tem **dois módulos independentes**; o tipo `PROVIDERS` é a **Rede Residencial** e o tipo `GERADORES` é **Combustível e Geradores**.
+
+| | Rede Residencial (`/residencial/*`) | Combustível e Geradores (`/geradores/*`) |
+|---|---|---|
+| Páginas | Dashboard, Facturas, Relatórios, Parceiros e orçamentos (PO/orçamento) | Dashboard, Mapas mensais, Resumo de validações, Sites e geradores, Relatórios, Parceiros e preços, Faixas de desconto, Targets |
+| Parceiros | Lista própria | Lista própria |
+| Equipas | Tipo `PROVIDERS` | Tipo `GERADORES` |
+
+- Quem só pertence a equipas de um módulo nunca vê o outro (menu, rotas e API). O Gestor e quem tem equipas dos dois tipos muda de módulo no selector da barra lateral; o último módulo usado fica guardado.
+- Parceiros: cada `Provider` pertence a **um** módulo (`tipo`); a mesma empresa nos dois módulos tem dois registos (`@@unique([nome, tipo])`). PO/orçamento só nos da Rede Residencial; preços, geradores, mapas e targets só nos de Combustível e Geradores.
+- Na API: `/providers` só devolve (e só deixa criar/editar) parceiros dos módulos do utilizador; `/prices`, `/discount-rules` e `/targets` exigem acesso a Combustível e Geradores; os relatórios recusam equipa ou parceiro de outro módulo.
+- Administração (Utilizadores, Equipas) é comum e só do Gestor.
+
 ## 6. Modelo de dados (Prisma — resumo)
 
 ```prisma
@@ -221,14 +236,15 @@ model UserPermission {
 }
 
 // ---------- Página única de providers ----------
-model Provider {
+model Provider {                // parceiro de UM módulo (listas separadas, §5.5)
   id String @id @default(cuid())
-  nome String @unique
+  nome String
+  tipo BillingType              // PROVIDERS = Rede Residencial; GERADORES = Combustível e Geradores
   nif String?
   contacto String?
   email String?
-  tipos BillingType[]
   ativo Boolean @default(true)
+  @@unique([nome, tipo])
 }
 
 model ProviderBudget {          // PO e orçamento por provider/equipa/ano
@@ -637,9 +653,10 @@ GET    /audit                               ?entity&userId&from&to
 ## 15. Seed inicial
 
 - Utilizador Gestor (email e password vêm do `.env`).
-- Providers: Anglobal (PO 4500614726), Blinder (PO 4500614723), Comatel (PO em branco), todos com orçamento mensal de 2.950.000,00 (linha por omissão, sem equipa, para o ano corrente ou `SEED_ANO`).
+- Parceiros da Rede Residencial: Anglobal (PO 4500614726), Blinder (PO 4500614723), Comatel (PO em branco), todos com orçamento mensal de 2.950.000,00 (linha por omissão, sem equipa, para o ano corrente ou `SEED_ANO`).
+- Parceiros de Combustível e Geradores: Anglobal, Blinder e Comatel (registos próprios, sem PO/orçamento).
 - Faixas de desconto da rede: 0–5 → 0%, 6–11 → 35%, 12–17 → 45%, 18–24 → 55%.
-- Tabela de preços Anglobal: combustível 420,00, serviço de abastecimento 48,00, IVA 14%. **Aluguer, manutenção e penalizações ficam em branco.**
+- Tabela de preços Anglobal (Combustível e Geradores): combustível 420,00, serviço de abastecimento 48,00, IVA 14%. **Aluguer, manutenção e penalizações ficam em branco.**
 - **Equipas: nenhuma.** São criadas na ferramenta.
 - **Targets: em branco.** São preenchidos na ferramenta (global e por provider).
 - Script opcional de migração dos dados existentes (Excel de Providers e Auto de Medição de Agosto de 2026), executado depois de criadas as equipas.

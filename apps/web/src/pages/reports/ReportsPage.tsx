@@ -1,7 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BILLING_TYPE_LABELS, MONTHS_FULL, REGIOES, REPORT_MODELS, ReportData, ReportFilter, ReportModelo, ReportTipo } from "@cf/shared";
-import { Tabs } from "../../components/Tabs";
 import { Alert, Button, PageHeader, Select, Spinner, errorMessage } from "../../components/ui";
 import { useAuth } from "../../hooks/useAuth";
 import { usePermission } from "../../hooks/usePermission";
@@ -12,12 +11,11 @@ import { captureCharts } from "../../export/chartToPng";
 import { download } from "../../export/format";
 import ReportView from "./ReportView";
 
-const FILTER_LABELS: Record<ReportFilter, string> = { ano: "Ano", mes: "Mês", equipa: "Equipa", provider: "Provider", regiao: "Região", provincia: "Província" };
+const FILTER_LABELS: Record<ReportFilter, string> = { ano: "Ano", mes: "Mês", equipa: "Equipa", provider: "Parceiro", regiao: "Região", provincia: "Província" };
 
-export default function ReportsPage() {
+/** Relatórios de um módulo (Rede Residencial ou Combustível e Geradores). */
+export default function ReportsPage({ tipo }: { tipo: ReportTipo }) {
   const { user } = useAuth();
-  const tipos = (["PROVIDERS", "GERADORES"] as ReportTipo[]).filter((t) => user?.billingTypes.includes(t));
-  const [tipo, setTipo] = useState<ReportTipo>(tipos[0] ?? "PROVIDERS");
   const [modelo, setModelo] = useState<ReportModelo | "">("");
   const [ano, setAno] = useState(new Date().getFullYear());
   const [mes, setMes] = useState("");
@@ -41,7 +39,6 @@ export default function ReportsPage() {
     queryKey: ["report-options", tipo],
     queryFn: async (): Promise<GeneratorOptions | BillingOptions> =>
       tipo === "PROVIDERS" ? api<BillingOptions>("/billing/providers/options") : api<GeneratorOptions>("/generators/options"),
-    enabled: tipos.length > 0,
   });
   const provincias = useMemo(() => (options.data && "provincias" in options.data ? options.data.provincias : []), [options.data]);
 
@@ -94,26 +91,9 @@ export default function ReportsPage() {
     }
   }
 
-  if (tipos.length === 0) {
-    return (
-      <>
-        <PageHeader title="Relatórios" />
-        <Alert kind="info">Não pertence a nenhuma equipa activa. Peça ao Gestor para o associar a uma equipa.</Alert>
-      </>
-    );
-  }
-
   return (
     <>
-      <PageHeader title="Relatórios" subtitle="Escolha o tipo, o modelo e os filtros. A exportação é feita no browser." />
-
-      {tipos.length > 1 && (
-        <Tabs<ReportTipo>
-          value={tipo}
-          onChange={(v) => { setTipo(v); setModelo(""); setProviderId(""); setTeamId(""); setProvincia(""); reset(); }}
-          items={tipos.map((t) => ({ value: t, label: t === "GERADORES" ? "Controlo de Geradores" : BILLING_TYPE_LABELS[t] }))}
-        />
-      )}
+      <PageHeader title={`Relatórios · ${BILLING_TYPE_LABELS[tipo]}`} subtitle="Escolha o modelo e os filtros. A exportação é feita no browser." />
 
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {models.map((m) => (
@@ -150,8 +130,8 @@ export default function ReportsPage() {
             </Select>
           )}
           {has("provider") && (
-            <Select value={providerId} onChange={(e) => { setProviderId(e.target.value); reset(); }} className="w-44" aria-label="Provider">
-              <option value="">{required("provider") ? "Provider…" : "Todos os providers"}</option>
+            <Select value={providerId} onChange={(e) => { setProviderId(e.target.value); reset(); }} className="w-44" aria-label="Parceiro">
+              <option value="">{required("provider") ? "Parceiro…" : "Todos os parceiros"}</option>
               {options.data?.providers.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
             </Select>
           )}

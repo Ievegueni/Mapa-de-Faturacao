@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BILLING_TYPE_LABELS, MONTHS_FULL } from "@cf/shared";
-import { Tabs } from "../components/Tabs";
 import { Alert, PageHeader, Select, Spinner, errorMessage } from "../components/ui";
 import { useAuth } from "../hooks/useAuth";
 import { usePermission } from "../hooks/usePermission";
@@ -13,73 +12,59 @@ import ProvidersDashboard from "./dashboard/ProvidersDashboard";
 
 type Tipo = "PROVIDERS" | "GERADORES";
 
-export default function DashboardPage() {
+/** Dashboard de um módulo (Rede Residencial ou Combustível e Geradores). */
+export default function DashboardPage({ tipo }: { tipo: Tipo }) {
   const { user } = useAuth();
   const isGestor = user?.role === "GESTOR";
   const canTeams = usePermission("teams", "view");
-  const [tipo, setTipo] = useState<Tipo | "">("");
   const [ano, setAno] = useState(new Date().getFullYear());
   const [mes, setMes] = useState("");
   const [teamId, setTeamId] = useState("");
   const [providerId, setProviderId] = useState("");
 
-  const qs = new URLSearchParams({ ano: String(ano) });
-  if (tipo) qs.set("tipo", tipo);
+  const qs = new URLSearchParams({ ano: String(ano), tipo });
   if (mes && tipo === "GERADORES") qs.set("mes", mes);
   if (teamId) qs.set("teamId", teamId);
   if (providerId) qs.set("providerId", providerId);
   const data = useQuery({ queryKey: ["dashboard", tipo, ano, mes, teamId, providerId], queryFn: () => api<DashboardResponse>(`/dashboard?${qs}`), keepPreviousData: true });
-  const current = (tipo || data.data?.tipo || "") as Tipo | "";
-
-  useEffect(() => {
-    if (!tipo && data.data?.tipo) setTipo(data.data.tipo);
-  }, [data.data, tipo]);
 
   const teams = useQuery({ queryKey: ["teams", "true"], queryFn: () => api<TeamRow[]>("/teams?ativo=true"), enabled: isGestor && canTeams });
   const provOpts = useQuery({
-    queryKey: ["dash-providers", current],
+    queryKey: ["dash-providers", tipo],
     queryFn: async () =>
-      current === "PROVIDERS" ? (await api<BillingOptions>("/billing/providers/options")).providers : (await api<GeneratorOptions>("/generators/options")).providers,
-    enabled: !!current,
+      tipo === "PROVIDERS" ? (await api<BillingOptions>("/billing/providers/options")).providers : (await api<GeneratorOptions>("/generators/options")).providers,
   });
 
   const d = data.data;
-  const tipos = d?.tipos ?? [];
-  const avisos = (current === "PROVIDERS" ? d?.providers?.avisos : d?.geradores?.avisos) ?? [];
+  const avisos = (tipo === "PROVIDERS" ? d?.providers?.avisos : d?.geradores?.avisos) ?? [];
 
   return (
     <>
-      <PageHeader title="Dashboard" subtitle={isGestor ? "Visão global" : user?.role === "TECNICO" ? "Resumo das suas equipas" : "Visão das suas equipas"} />
-      {tipos.length > 1 && (
-        <Tabs<Tipo>
-          value={current as Tipo}
-          onChange={(v) => { setTipo(v); setProviderId(""); setTeamId(""); }}
-          items={tipos.map((t) => ({ value: t, label: t === "GERADORES" ? "Controlo de Geradores" : BILLING_TYPE_LABELS[t] }))}
-        />
-      )}
-      {tipos.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-2">
-          <Select value={ano} onChange={(e) => setAno(Number(e.target.value))} className="w-24" aria-label="Ano">
-            {yearOptions().map((y) => <option key={y} value={y}>{y}</option>)}
+      <PageHeader
+        title={`Dashboard · ${BILLING_TYPE_LABELS[tipo]}`}
+        subtitle={isGestor ? "Visão global" : user?.role === "TECNICO" ? "Resumo das suas equipas" : "Visão das suas equipas"}
+      />
+      <div className="mb-4 flex flex-wrap gap-2">
+        <Select value={ano} onChange={(e) => setAno(Number(e.target.value))} className="w-24" aria-label="Ano">
+          {yearOptions().map((y) => <option key={y} value={y}>{y}</option>)}
+        </Select>
+        {tipo === "GERADORES" && (
+          <Select value={mes} onChange={(e) => setMes(e.target.value)} className="w-44" aria-label="Mês">
+            <option value="">Último mês com dados</option>
+            {MONTHS_FULL.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
           </Select>
-          {current === "GERADORES" && (
-            <Select value={mes} onChange={(e) => setMes(e.target.value)} className="w-44" aria-label="Mês">
-              <option value="">Último mês com dados</option>
-              {MONTHS_FULL.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
-            </Select>
-          )}
-          {isGestor && (teams.data?.length ?? 0) > 0 && (
-            <Select value={teamId} onChange={(e) => setTeamId(e.target.value)} className="w-48" aria-label="Equipa">
-              <option value="">Todas as equipas</option>
-              {teams.data!.filter((t) => t.tipo === current).map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
-            </Select>
-          )}
-          <Select value={providerId} onChange={(e) => setProviderId(e.target.value)} className="w-44" aria-label="Provider">
-            <option value="">Todos os providers</option>
-            {provOpts.data?.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
+        )}
+        {isGestor && (teams.data?.length ?? 0) > 0 && (
+          <Select value={teamId} onChange={(e) => setTeamId(e.target.value)} className="w-48" aria-label="Equipa">
+            <option value="">Todas as equipas</option>
+            {teams.data!.filter((t) => t.tipo === tipo).map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
           </Select>
-        </div>
-      )}
+        )}
+        <Select value={providerId} onChange={(e) => setProviderId(e.target.value)} className="w-44" aria-label="Parceiro">
+          <option value="">Todos os parceiros</option>
+          {provOpts.data?.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
+        </Select>
+      </div>
       {avisos.length > 0 && (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800" role="status">
           <div className="font-semibold">⚠ Dados de configuração em falta</div>
@@ -90,11 +75,11 @@ export default function DashboardPage() {
         <Spinner />
       ) : data.error ? (
         <Alert>{errorMessage(data.error)}</Alert>
-      ) : !d || tipos.length === 0 ? (
-        <Alert kind="info">Ainda não tem acesso a nenhum tipo de facturação. Peça ao Gestor para o associar a uma equipa.</Alert>
-      ) : current === "PROVIDERS" && d.providers ? (
+      ) : !d ? (
+        <Spinner />
+      ) : tipo === "PROVIDERS" && d.providers ? (
         <ProvidersDashboard data={d.providers} simplified={d.simplificado} />
-      ) : current === "GERADORES" && d.geradores ? (
+      ) : tipo === "GERADORES" && d.geradores ? (
         d.geradores.kpis.mapas === 0 && d.geradores.mesesComDados.length === 0 ? (
           <Alert kind="info">Sem mapas de geradores em {ano}.</Alert>
         ) : (

@@ -36,7 +36,7 @@ export default function TargetsPage() {
   const [grid, setGrid] = useState<Grid>({});
   const [saved, setSaved] = useState(false);
 
-  const providers = useQuery({ queryKey: ["providers", "GERADORES"], queryFn: () => api<ProviderRow[]>("/providers?ativo=true&tipo=GERADORES") });
+  const providers = useQuery({ queryKey: ["providers", "GERADORES", "true"], queryFn: () => api<ProviderRow[]>("/providers?ativo=true&tipo=GERADORES") });
   const targets = useQuery({ queryKey: ["targets", ano], queryFn: () => api<{ ano: number; items: TargetRow[] }>(`/targets?ano=${ano}`) });
 
   const original = useMemo(() => toGrid(targets.data?.items || []), [targets.data]);
@@ -80,7 +80,7 @@ export default function TargetsPage() {
     <>
       <PageHeader
         title="Targets"
-        subtitle="Objectivos mensais de aluguer e combustível: global e por provider. Células vazias aparecem como —."
+        subtitle="Objectivos mensais de aluguer e combustível: global e por parceiro. Células vazias aparecem como —."
         actions={
           canEdit && (
             <Button disabled={!dirty || save.isLoading} onClick={() => { setSaved(false); save.mutate(); }}>

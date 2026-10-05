@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PASSWORD_MIN, Role, ROLE_LABELS, ROLES, userCreateSchema, userUpdateSchema } from "@cf/shared";
+import { BILLING_TYPE_LABELS, PASSWORD_MIN, Role, ROLE_LABELS, ROLES, userCreateSchema, userUpdateSchema } from "@cf/shared";
 import { useAuth } from "../hooks/useAuth";
 import { Can, usePermission } from "../hooks/usePermission";
 import { api, apiDelete, apiPatch, apiPost } from "../lib/api";
@@ -203,7 +203,7 @@ function UserForm({ user, isSelf, onClose }: { user: UserRow | null; isSelf: boo
                 {teams.data.map((t) => (
                   <label key={t.id} className="flex items-center gap-2 rounded px-1.5 py-1 text-sm hover:bg-ink-50">
                     <input type="checkbox" className="accent-brand-500" checked={form.teamIds.includes(t.id)} onChange={() => toggleTeam(t.id)} />
-                    {t.nome} <span className="text-xs text-ink-400">({t.tipo === "PROVIDERS" ? "Providers" : "Geradores"})</span>
+                    {t.nome} <span className="text-xs text-ink-400">({BILLING_TYPE_LABELS[t.tipo]})</span>
                   </label>
                 ))}
               </div>

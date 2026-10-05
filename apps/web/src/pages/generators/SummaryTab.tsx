@@ -25,7 +25,7 @@ export default function SummaryTab({ map }: { map: GeneratorMapDetail }) {
         <div className="border-b border-ink-100 px-5 py-3">
           <h3 className="font-semibold text-navy-950">Mapa de facturação do mês</h3>
           <p className="text-xs text-ink-500">
-            Facturado = valor da factura do provider (se inserido abaixo) ou soma de todas as medições; Validado = medições validadas ou fechadas; Diferença = facturado − validado. IVA {d.ivaPercent ? formatPercent(d.ivaPercent) : "—"} sobre aluguer e serviço de abastecimento, calculado sobre o validado; o combustível não leva IVA.
+            Facturado = valor da factura do parceiro (se inserido abaixo) ou soma de todas as medições; Validado = medições validadas ou fechadas; Diferença = facturado − validado. IVA {d.ivaPercent ? formatPercent(d.ivaPercent) : "—"} sobre aluguer e serviço de abastecimento, calculado sobre o validado; o combustível não leva IVA.
           </p>
         </div>
         <table className="min-w-full divide-y divide-ink-100">
@@ -45,7 +45,7 @@ export default function SummaryTab({ map }: { map: GeneratorMapDetail }) {
                 {d.linhas.filter((l) => l.categoria === c).map((l) => (
                   <tr key={`${c}${l.zona}`}>
                     <td className={td}>{c} · {l.zona}</td>
-                    <td className={num} title={l.origemFacturado === "factura" ? "Valor da factura do provider" : "Soma de todas as medições do mapa"}>
+                    <td className={num} title={l.origemFacturado === "factura" ? "Valor da factura do parceiro" : "Soma de todas as medições do mapa"}>
                       {formatKz(l.facturado)}
                       <div className="text-[10px] text-ink-400">{l.origemFacturado === "factura" ? "factura" : "medições"}</div>
                     </td>
@@ -124,7 +124,7 @@ function IndicatorsCard({ map, data }: { map: GeneratorMapDetail; data: MonthSum
   return (
     <Card className="space-y-4 p-5">
       <div>
-        <h3 className="font-semibold text-navy-950">Indicadores do mês e factura do provider</h3>
+        <h3 className="font-semibold text-navy-950">Indicadores do mês e factura do parceiro</h3>
         <p className="text-xs text-ink-500">Valores inseridos manualmente; podem ficar em branco.</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -139,7 +139,7 @@ function IndicatorsCard({ map, data }: { map: GeneratorMapDetail; data: MonthSum
         </Field>
       </div>
       <div className="border-t border-ink-100 pt-4">
-        <h4 className="text-sm font-semibold text-navy-950">Factura do provider (opcional)</h4>
+        <h4 className="text-sm font-semibold text-navy-950">Factura do parceiro (opcional)</h4>
         <p className="mb-3 text-xs text-ink-500">Quando preenchido, o Facturado do quadro acima passa a ser o valor da factura e a Diferença mostra factura − validado.</p>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {(

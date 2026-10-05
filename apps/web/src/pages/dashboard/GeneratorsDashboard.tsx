@@ -59,13 +59,13 @@ export default function GeneratorsDashboard({ data, simplified }: { data: G; sim
         <ChartCard title="Comparação com os targets" subtitle={`${MONTHS_FULL[data.mes - 1]}: aluguer e manutenção (aluguer − desconto + manutenção) e abastecimento (combustível + serviço).`}>
           <div className="space-y-5">
             <div className="space-y-3">
-              <div className="text-xs font-semibold uppercase tracking-wider text-ink-400">Target global (todos os providers)</div>
+              <div className="text-xs font-semibold uppercase tracking-wider text-ink-400">Target global (todos os parceiros)</div>
               <TargetBar label="Aluguer e manutenção" c={data.comparacao.global.aluguerManut} />
               <TargetBar label="Abastecimento" c={data.comparacao.global.abastecimento} />
             </div>
             {data.comparacao.providers.map((p) => (
               <div key={p.providerId} className="space-y-3 border-t border-ink-100 pt-4">
-                <div className="text-xs font-semibold uppercase tracking-wider text-ink-400">Target do provider · {p.nome}</div>
+                <div className="text-xs font-semibold uppercase tracking-wider text-ink-400">Target do parceiro · {p.nome}</div>
                 <TargetBar label="Aluguer e manutenção" c={p.aluguerManut} />
                 <TargetBar label="Abastecimento" c={p.abastecimento} />
               </div>

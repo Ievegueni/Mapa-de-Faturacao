@@ -1,10 +1,12 @@
 import { targetsUpsertSchema, yearSchema } from "@cf/shared";
 import { FastifyPluginAsync } from "fastify";
 import { notFound, parse } from "../../lib/errors";
-import { requirePermission } from "../../plugins/rbac";
+import { assertBillingType, requirePermission } from "../../plugins/rbac";
 
 const targetsRoutes: FastifyPluginAsync = async (app) => {
   app.addHook("onRequest", app.authenticate);
+  // Targets pertencem ao módulo Combustível e Geradores.
+  app.addHook("preHandler", async (req) => assertBillingType(req.auth, "GERADORES"));
 
   /** Targets do ano: linha global (providerId vazio) e linhas por provider. */
   app.get<{ Querystring: { ano?: string } }>(
@@ -25,8 +27,8 @@ const targetsRoutes: FastifyPluginAsync = async (app) => {
     const { ano, items } = parse(targetsUpsertSchema, req.body);
 
     const providerIds = Array.from(new Set(items.map((i) => i.providerId).filter((id): id is string => !!id)));
-    const found = await app.prisma.provider.count({ where: { id: { in: providerIds } } });
-    if (found !== providerIds.length) throw notFound("Provider não encontrado");
+    const found = await app.prisma.provider.count({ where: { id: { in: providerIds }, tipo: "GERADORES" } });
+    if (found !== providerIds.length) throw notFound("Parceiro de Combustível e Geradores não encontrado");
 
     const existing = await app.prisma.target.findMany({ where: { ano } });
     const key = (mes: number, providerId: string | null) => `${providerId ?? "GLOBAL"}:${mes}`;

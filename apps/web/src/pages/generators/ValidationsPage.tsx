@@ -91,13 +91,13 @@ function buildSections(potencias: string[]): { title: string; rows: Row[] }[] {
       ],
     },
     {
-      title: "Target global (todos os providers)",
+      title: "Target global (todos os parceiros)",
       rows: [
         { label: "Target global — aluguer e manutenção", get: (m) => m.targets.globalAluguerManut.target, format: "kz", sum: true },
-        { label: "Aluguer e manutenção — todos os providers", get: (m) => m.targets.globalAluguerManut.valor, format: "kz", sum: true },
+        { label: "Aluguer e manutenção — todos os parceiros", get: (m) => m.targets.globalAluguerManut.valor, format: "kz", sum: true },
         { label: "Desvio (%)", get: (m) => m.targets.globalAluguerManut.desvioPercent, format: "pct", tone: (m) => toneDev(m.targets.globalAluguerManut) },
         { label: "Target global — combustível e serviço", get: (m) => m.targets.globalAbastecimento.target, format: "kz", sum: true },
-        { label: "Abastecimento — todos os providers", get: (m) => m.targets.globalAbastecimento.valor, format: "kz", sum: true },
+        { label: "Abastecimento — todos os parceiros", get: (m) => m.targets.globalAbastecimento.valor, format: "kz", sum: true },
         { label: "Desvio (%)", get: (m) => m.targets.globalAbastecimento.desvioPercent, format: "pct", tone: (m) => toneDev(m.targets.globalAbastecimento) },
       ],
     },
@@ -150,12 +150,12 @@ export default function ValidationsPage() {
 
   return (
     <>
-      <PageHeader title="Mapa Resumo de Validações" subtitle="Vista anual por provider, calculada a partir das medições. Valores em Kz; divisões por zero aparecem como —." />
+      <PageHeader title="Mapa Resumo de Validações" subtitle="Vista anual por parceiro, calculada a partir das medições. Valores em Kz; divisões por zero aparecem como —." />
       <div className="mb-4 flex flex-wrap gap-2">
         <Select value={ano} onChange={(e) => setAno(Number(e.target.value))} className="w-24" aria-label="Ano">
           {yearOptions().map((y) => <option key={y} value={y}>{y}</option>)}
         </Select>
-        <Select value={providerId} onChange={(e) => setProviderId(e.target.value)} className="w-48" aria-label="Provider">
+        <Select value={providerId} onChange={(e) => setProviderId(e.target.value)} className="w-48" aria-label="Parceiro">
           {options.data?.providers.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
         </Select>
         {(options.data?.teams.length ?? 0) > 1 && (
@@ -170,7 +170,7 @@ export default function ValidationsPage() {
       ) : options.error || data.error ? (
         <Alert>{errorMessage(options.error || data.error)}</Alert>
       ) : !providerId ? (
-        <Alert kind="info">Não há providers de Geradores.</Alert>
+        <Alert kind="info">Não há parceiros de Combustível e Geradores.</Alert>
       ) : (
         <Card className="overflow-auto" >
           <table className="min-w-full text-xs">

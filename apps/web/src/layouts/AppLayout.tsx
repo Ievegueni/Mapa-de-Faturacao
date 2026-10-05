@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
-import { ROLE_LABELS } from "@cf/shared";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { BILLING_TYPE_LABELS, BillingType, ROLE_LABELS } from "@cf/shared";
 import { Logo } from "../components/Logo";
 import { useAuth } from "../hooks/useAuth";
-import { buildMenu } from "../lib/menu";
+import { buildMenu, moduleHome } from "../lib/menu";
+import { useCurrentModule } from "../lib/module";
 
 function Icon({ d }: { d: string }) {
   return (
@@ -16,8 +17,14 @@ function Icon({ d }: { d: string }) {
 export default function AppLayout() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const modulo = useCurrentModule(user?.billingTypes ?? []);
   if (!user) return null;
-  const menu = buildMenu(user);
+  const menu = buildMenu(user, modulo);
+  const switchTo = (t: BillingType) => {
+    setOpen(false);
+    navigate(moduleHome(user, t) ?? "/");
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -30,6 +37,27 @@ export default function AppLayout() {
         <div className="px-5 py-6">
           <Logo dark />
         </div>
+        {user.billingTypes.length > 1 ? (
+          /* Selector de módulo: Rede Residencial | Combustível e Geradores (só para quem tem os dois) */
+          <div className="mx-3 mb-5 grid grid-cols-2 gap-1 rounded-xl bg-white/5 p-1" role="tablist" aria-label="Módulo">
+            {user.billingTypes.map((t) => (
+              <button
+                key={t}
+                type="button"
+                role="tab"
+                aria-selected={modulo === t}
+                onClick={() => switchTo(t)}
+                className={`rounded-lg px-2 py-1.5 text-xs font-semibold leading-tight transition ${
+                  modulo === t ? "bg-brand-500 text-white" : "text-navy-300 hover:text-white"
+                }`}
+              >
+                {BILLING_TYPE_LABELS[t]}
+              </button>
+            ))}
+          </div>
+        ) : modulo ? (
+          <div className="mx-6 mb-5 text-xs font-semibold uppercase tracking-wider text-brand-400">{BILLING_TYPE_LABELS[modulo]}</div>
+        ) : null}
         <nav className="flex-1 space-y-6 overflow-y-auto px-3">
           {menu.map((section, i) => (
             <div key={i}>

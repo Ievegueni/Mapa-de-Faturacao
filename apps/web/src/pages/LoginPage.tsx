@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (user) return <Navigate to={user.mustChangePassword ? "/trocar-password" : user.homePath} replace />;
+  if (user) return <Navigate to={user.mustChangePassword ? "/trocar-password" : "/"} replace />;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -19,7 +19,7 @@ export default function LoginPage() {
     setError(null);
     try {
       const me = await login(email, password);
-      navigate(me.mustChangePassword ? "/trocar-password" : me.homePath, { replace: true });
+      navigate(me.mustChangePassword ? "/trocar-password" : "/", { replace: true });
     } catch (err) {
       setError(errorMessage(err));
     } finally {
