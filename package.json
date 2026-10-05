@@ -15,6 +15,7 @@
     "build": "npm run build -w packages/shared -w apps/api -w apps/web",
     "migrate": "npm run migrate -w apps/api",
     "seed": "npm run seed -w apps/api",
+    "seed:demo": "npm run build -w packages/shared && npm run seed:demo -w apps/api",
     "test": "npm run test -w packages/shared -w apps/api"
   },
   "overrides": {
