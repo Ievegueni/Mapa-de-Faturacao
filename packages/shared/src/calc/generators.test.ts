@@ -33,9 +33,8 @@ const base = (over: Partial<MeasurementInput>): MeasurementInput => ({
 });
 
 /**
- * Linhas ilustrativas no formato do Auto de Medição de Agosto de 2026 (combustível 420,00; serviço 48,00).
+ * Linhas ilustrativas (com preço de aluguer, que o ficheiro real ainda não tem), para cobrir aluguer e desconto de rede.
  * Valores esperados calculados à parte com aritmética decimal exacta.
- * TODO: substituir/completar com linhas reais do Auto de Medição quando o ficheiro estiver disponível.
  */
 const rows: [string, Partial<MeasurementInput>, { ht: number; hr: number; pct: string; comb: number; serv: number; alug: number; desc: number; total: number }][] = [
   ["R01", { horasN1: "12450.00", horasN: "12822.00", litros: "620.50" }, { ht: 12, hr: 12, pct: "45.00", comb: 26061000, serv: 2978400, alug: 46500000, desc: 20925000, total: 54614400 }],
@@ -70,6 +69,48 @@ describe("calculateMeasurement — linhas do Auto de Medição", () => {
     const a = calculateMeasurement(base({ horasN1: 12450, horasN: "12822,00", litros: dec }), { bands });
     expect(a.combustivelCent).toBe(B(26061000));
     expect(a.horasTrabalhadas).toBe(12);
+  });
+});
+
+/**
+ * Linhas REAIS do Auto de Medição de Agosto de 2026 (folha AGOSTO_26; só os campos numéricos).
+ * Horas trabalhadas, horas de rede e % de desconto esperados = valores em cache do próprio Excel.
+ * Combustível e serviço calculados com os preços do seed (420,00 e 48,00); o ficheiro não tem preço de aluguer.
+ */
+const realRows: [number, number, number | string, number | string, number | string, number, number, string, number, number][] = [
+  // linha, dias, N-1, N, litros, horas trab., horas rede, % desc., combustível, serv. abast.
+  [81, 31, 26819.7, 27303.3, 297, 15, 9, "35.00", 12474000, 1425600],
+  [29, 31, 15906.800000000003, 16241.800000000003, 700, 10, 14, "45.00", 29400000, 3360000],
+  [7, 31, 1996, 1996, 410, 0, 24, "55.00", 17220000, 1968000],
+  [8, 31, 26647.5, 27327.5, 1710, 21, 3, "0.00", 71820000, 8208000],
+  [128, 17, 1296, 1463.5, 410, 9, 15, "45.00", 17220000, 1968000],
+  [40, 29, 1170.5, 1654.1, 0, 16, 8, "35.00", 0, 0],
+  [909, 31, 165.60000000000002, 916.4, 0, 24, 0, "0.00", 0, 0],
+  [12, 31, 1877.4, 1877.4, 400, 0, 24, "55.00", 16800000, 1920000],
+  [178, 31, 4119.5999999999985, 4799.5999999999985, 1593.67, 21, 3, "0.00", 66934140, 7649616],
+  [31, 31, 6630, 6965, 366, 10, 14, "45.00", 15372000, 1756800],
+];
+
+describe("calculateMeasurement — linhas reais (Agosto de 2026)", () => {
+  it.each(realRows)("linha %i", (_row, dias, n1, n, litros, ht, hr, pct, comb, serv) => {
+    const r = calculateMeasurement(base({ dias, horasN1: n1, horasN: n, litros, precoAluguerDiaCent: null }), { bands });
+    expect(r.horasTrabalhadas).toBe(ht);
+    expect(r.horasRede).toBe(hr);
+    expect(r.descontoPercent).toBe(pct);
+    expect(r.combustivelCent).toBe(B(comb));
+    expect(r.servAbastCent).toBe(B(serv));
+    expect(r.aluguerCent).toBe(B(0));
+    expect(r.totalCent).toBe(B(comb + serv));
+    expect(r.flags).toEqual(["SEM_PRECO_ALUGUER"]);
+  });
+
+  it("linha 338: 680 h em 12 dias → 56 h/dia, horas de rede −32 → fora das faixas", () => {
+    const r = calculateMeasurement(base({ dias: 12, horasN1: 30761, horasN: 31441, litros: 770, precoAluguerDiaCent: null }), { bands });
+    expect(r.horasTrabalhadas).toBe(56);
+    expect(r.horasRede).toBe(-32);
+    expect(r.descontoPercent).toBe("0.00");
+    expect(r.flags).toEqual(["HORAS_FORA_INTERVALO", "SEM_PRECO_ALUGUER"]);
+    expect(r.combustivelCent).toBe(B(32340000));
   });
 });
 

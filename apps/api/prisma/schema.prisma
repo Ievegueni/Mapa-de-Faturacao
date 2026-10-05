@@ -229,7 +229,8 @@ model Site {
   generators          Generator[]
   measurements        GeneratorMeasurement[]
 
-  @@unique([teamId, codigoPP])
+  /// O código P.P. não é único: há sites diferentes com o mesmo código no Auto de Medição real.
+  @@index([teamId, codigoPP])
   @@index([teamId, regiao])
   @@index([nome])
 }

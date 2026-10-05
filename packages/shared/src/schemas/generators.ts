@@ -70,3 +70,46 @@ export const generatorUpdateSchema = z
 
 export type SiteInput = z.infer<typeof siteSchema>;
 export type GeneratorInput = z.infer<typeof generatorSchema>;
+
+const decimalField = z
+  .union([z.string(), z.number(), z.null()])
+  .optional()
+  .transform((v, ctx) => {
+    if (v === null || v === undefined || v === "") return null;
+    const s = String(v).trim().replace(",", ".");
+    if (!/^-?\d+(\.\d+)?$/.test(s)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Número inválido" });
+      return z.NEVER;
+    }
+    return s;
+  });
+
+const manualCents = z
+  .union([z.literal(""), z.null(), z.string().trim().regex(/^\d+$/, "Valor inválido"), z.number().int().nonnegative()])
+  .optional()
+  .transform((v) => (v === undefined || v === null || v === "" ? null : String(v)));
+
+/** Campos editáveis de uma medição (o resto é calculado no servidor com a mesma função do browser). */
+export const measurementFieldsSchema = z.object({
+  dias: z.coerce.number().int("Dias inválidos").min(0, "Dias inválidos").max(31, "Dias inválidos"),
+  horasN1: decimalField,
+  horasN: decimalField,
+  litros: decimalField,
+  servExtrasCent: manualCents,
+  penExcessoHorasCent: manualCents,
+  penSLACent: manualCents,
+  penNivelCombustCent: manualCents,
+  penAvariaCent: manualCents,
+});
+
+export const measurementCreateSchema = measurementFieldsSchema.extend({ generatorId: z.string().min(1) });
+export const measurementUpdateSchema = measurementFieldsSchema.partial();
+
+export const generatorMapCreateSchema = z.object({
+  teamId: z.string().min(1, "Escolha a equipa"),
+  providerId: z.string().min(1, "Escolha o provider"),
+  ano: z.coerce.number().int().min(2000).max(2100),
+  mes: z.coerce.number().int().min(1).max(12),
+});
+
+export type MeasurementFields = z.infer<typeof measurementFieldsSchema>;

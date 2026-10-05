@@ -6,7 +6,10 @@ import authPlugin from "./plugins/auth";
 import prismaPlugin, { PrismaPluginOptions } from "./plugins/prisma";
 import authRoutes from "./modules/auth/routes";
 import billingProvidersRoutes from "./modules/billing-providers/routes";
+import importRoutes from "./modules/generators/import/routes";
+import mapsRoutes from "./modules/generators/maps.routes";
 import generatorsMasterRoutes from "./modules/generators/master.routes";
+import measurementsRoutes from "./modules/generators/measurements.routes";
 import healthRoutes from "./modules/health/routes";
 import permissionsRoutes from "./modules/permissions/routes";
 import pricesRoutes from "./modules/providers/prices.routes";
@@ -60,6 +63,9 @@ export function buildApp(opts: BuildAppOptions = {}) {
       api.register(targetsRoutes);
       api.register(billingProvidersRoutes);
       api.register(generatorsMasterRoutes);
+      api.register(mapsRoutes);
+      api.register(measurementsRoutes);
+      api.register(importRoutes);
     },
     { prefix: "/api" },
   );

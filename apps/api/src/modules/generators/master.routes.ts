@@ -66,10 +66,11 @@ const generatorsMasterRoutes: FastifyPluginAsync = async (app) => {
     return g;
   }
 
-  async function assertUniquePP(teamId: string, codigoPP: string | null, exceptId?: string) {
+  /** Duplicado = mesmo código P.P. e mesmo nome na equipa (o código sozinho não é único no Auto de Medição). */
+  async function assertUniquePP(teamId: string, codigoPP: string | null, nome: string, exceptId?: string) {
     if (!codigoPP) return;
-    const other = await app.prisma.site.findFirst({ where: { teamId, codigoPP } });
-    if (other && other.id !== exceptId) throw conflict(`Já existe um site com o código P.P. ${codigoPP} nesta equipa`);
+    const other = await app.prisma.site.findFirst({ where: { teamId, codigoPP, nome: { equals: nome, mode: "insensitive" } } });
+    if (other && other.id !== exceptId) throw conflict(`Já existe o site ${nome} com o código P.P. ${codigoPP} nesta equipa`);
   }
 
   async function assertUniqueSerie(numeroSerie: string, exceptId?: string) {
@@ -139,7 +140,7 @@ const generatorsMasterRoutes: FastifyPluginAsync = async (app) => {
   app.post("/generators/sites", { preHandler: requireMasterEdit }, async (req, reply) => {
     const data = parse(siteSchema, req.body);
     await assertGeneratorsTeam(req.auth, data.teamId);
-    await assertUniquePP(data.teamId, data.codigoPP);
+    await assertUniquePP(data.teamId, data.codigoPP, data.nome);
     const site = await app.prisma.site.create({ data, include: siteInclude });
     await app.audit({ userId: req.auth.id, entity: "Site", entityId: site.id, action: "create", diff: data });
     return reply.code(201).send(site);
@@ -150,7 +151,9 @@ const generatorsMasterRoutes: FastifyPluginAsync = async (app) => {
     const before = await getSite(req.auth, req.params.id);
     const teamId = data.teamId ?? before.teamId;
     if (data.teamId && data.teamId !== before.teamId) await assertGeneratorsTeam(req.auth, data.teamId);
-    if (data.codigoPP !== undefined || data.teamId) await assertUniquePP(teamId, data.codigoPP ?? before.codigoPP, before.id);
+    if (data.codigoPP !== undefined || data.teamId || data.nome) {
+      await assertUniquePP(teamId, data.codigoPP !== undefined ? data.codigoPP : before.codigoPP, data.nome ?? before.nome, before.id);
+    }
     const site = await app.prisma.site.update({ where: { id: before.id }, data, include: siteInclude });
     const diff: Record<string, [unknown, unknown]> = {};
     for (const [k, v] of Object.entries(data)) {

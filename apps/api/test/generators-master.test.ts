@@ -72,12 +72,12 @@ describe.skipIf(!TEST_DB)("sites e geradores (dados mestre)", () => {
     const bySerie = (await req("GET", tecnico, "/generators/sites?q=sn-0001")).json();
     expect(bySerie.items.map((s: { id: string }) => s.id)).toEqual([siteId]);
     expect((await req("GET", tecnico, "/generators/sites")).json().total).toBe(1);
-    expect((await req("GET", gestor, "/generators/sites?regiao=Centro")).json().items[0].nome).toBe("Huambo 02");
+    expect((await req("GET", gestor, `/generators/sites?regiao=Centro&teamId=${teamB}`)).json().items[0].nome).toBe("Huambo 02");
     expect((await req("GET", tecnico, `/generators/sites/${siteB.id}`)).statusCode).toBe(403);
     expect((await req("GET", tecnico, `/generators/sites?teamId=${teamB}`)).statusCode).toBe(403);
 
-    expect((await req("GET", gestor, "/generators/generators?potencia=40")).json().items[0].numeroSerie).toBe("SN-B1");
-    expect((await req("GET", gestor, "/generators/generators?removidos=true")).json().items.map((g: { numeroSerie: string }) => g.numeroSerie)).toEqual(["SN-0001"]);
+    expect((await req("GET", gestor, `/generators/generators?potencia=40&teamId=${teamB}`)).json().items[0].numeroSerie).toBe("SN-B1");
+    expect((await req("GET", gestor, `/generators/generators?removidos=true&teamId=${teamA}`)).json().items.map((g: { numeroSerie: string }) => g.numeroSerie)).toEqual(["SN-0001"]);
     expect((await req("GET", tecnico, "/generators/generators?q=Huambo")).json().total).toBe(0);
 
     const opts = (await req("GET", tecnico, "/generators/options")).json();
